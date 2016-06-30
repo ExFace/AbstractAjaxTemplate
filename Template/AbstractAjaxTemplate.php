@@ -1,0 +1,482 @@
+<?php namespace exface\Apps\exface\AbstractAjaxTemplate\Template;
+
+use exface\Core\AbstractTemplate;
+use exface\Core\Exceptions\TemplateError;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Widgets\Data;
+use exface\Widgets\AbstractWidget;
+use exface\Core\Interfaces\Widgets\iTriggerAction;
+use exface\Core\Interfaces\DataSheets\DataSheetInterface;
+use exface\Core\Exceptions\exfError;
+use exface\Core\Exceptions\exfWarning;
+use exface\Core\UxonObject;
+use exface\Core\WidgetLink;
+use exface\Core\Factories\DataSheetFactory;
+use exface\Core\Factories\ActionFactory;
+
+abstract class AbstractAjaxTemplate extends AbstractTemplate {
+	private $elements = array();
+	private $class_prefix = '';
+	private $class_namespace = '';
+	protected $request_id = null;
+	protected $request_paging_offset = 0;
+	protected $request_paging_rows = NULL;
+	protected $request_filters_array = array();
+	protected $request_quick_search_value = NULL;
+	protected $request_sorting_sort_by = NULL;
+	protected $request_sorting_direction = NULL;
+	protected $request_widget_id = NULL;
+	protected $request_page_id = NULL;
+	protected $request_action_alias = NULL;
+	protected $request_prefill_data = NULL;
+	protected $request_system_vars = array();
+	
+	function draw(\exface\Widgets\AbstractWidget $widget){
+		$output = '';
+		
+		if (!$this->check_widget_implementation($widget->get_widget_type())){
+			throw new TemplateError('Widget "' . $widget->widget_type . '" not implemented!');
+			return '';
+		}
+		
+		$output .= $this->generate_html($widget);
+		$js = $this->generate_js($widget);
+		if ($js){
+			$output .= "\n" . '<script type="text/javascript">' . $js . '</script>';
+		}
+		
+		return $output;
+	}
+	
+	/**
+	 * Generates the JavaScript for a given Widget
+	 * @param \exface\Widgets\AbstractWidget $widget
+	 */
+	function generate_js(\exface\Widgets\AbstractWidget $widget){
+		$instance = $this->get_element($widget);
+		return $instance->generate_js();
+	}
+	
+	/**
+	 * Generates the HTML for a given Widget
+	 * @param \exface\Widgets\AbstractWidget $widget
+	 */
+	function generate_html(\exface\Widgets\AbstractWidget $widget){
+		$instance = $this->get_element($widget);
+		return $instance->generate_html();
+	}
+	
+	/**
+	 * Generates the declaration of the JavaScript sources
+	 * @return string
+	 */
+	public function draw_headers(\exface\Widgets\AbstractWidget $widget){
+		$instance = $this->get_element($widget, $widget->get_page_id());
+		return implode("\n", array_unique($instance->generate_headers()));
+	}
+	
+	/**
+	 * Creates a template element for a given ExFace widget.
+	 * Elements are cached within the template engine, so multiple calls to this method do
+	 * not cause the element to get recreated from scratch. This improves performance.
+	 * 
+	 * @param \exface\Widgets\AbstractWidget $widget
+	 * @return \exface\Templates\jeasyui\Widgets\jeasyuiAbstractWidget
+	 */
+	function get_element(\exface\Widgets\AbstractWidget $widget){
+		if (!$this->elements[$widget->get_page_id()][$widget->get_id()]){
+			$elem_class = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix() . $widget->get_widget_type();
+			// if the required widget is not found, create an abstract widget instead
+			if (!class_exists($elem_class)){
+				// TODO throw exception or issue some kind of warning
+				$elem_class = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix() . 'BasicElement';
+			}
+			
+			$instance = new $elem_class($widget, $this);
+			$instance->init();
+			$this->elements[$widget->get_page_id()][$widget->get_id()] = $instance;
+		}
+		
+		return $this->elements[$widget->get_page_id()][$widget->get_id()];
+	}
+	
+	/**
+	 * Creates a template element for a widget of the give resource, specified by the
+	 * widget's ID. It's just a shortcut in case you do not have the widget object at
+	 * hand, but know it's ID and the resource, where it resides.
+	 * 
+	 * @param strig $widget_id
+	 * @param string $page_id
+	 * @return \exface\Templates\jeasyui\Widgets\jeasyuiAbstractWidget
+	 */
+	function get_element_by_widget_id($widget_id, $page_id){
+		if ($elem = $this->elements[$page_id][$widget_id]){
+			return $elem;
+		} else {
+			if ($widget_id = $this->exface()->ui()->get_widget($widget_id, $page_id)){
+				return $this->get_element($widget_id);
+			} else {
+				return false;
+			}
+			
+		}
+	}
+	
+	function get_element_from_widget_link(WidgetLink $link){
+		return $this->get_element_by_widget_id($link->get_widget_id(), $link->get_page_id());
+	}
+	
+	function check_widget_implementation($widget_type){
+		// FIXME change to some sort of check for existing class like in the draw() method
+		/*if (method_exists($this, 'draw_' . $widget_type)){
+			return true;
+		} else {
+			return false;
+		}*/
+		return true;
+	}
+	
+	public function create_link_internal($page_id, $url_params=''){
+		return $this->exface()->cms()->create_link_internal($page_id, $url_params);
+	}
+
+	public function get_data_sheet_from_request($object_id = NULL, $widget = NULL) {
+		if (!$this->request_data_sheet){
+			// Look for filter data
+			$filters = $this->get_request_filters();
+			// Add filters for quick search
+			if ($widget && $quick_search = $this->get_request_quick_search_value()){
+				$quick_search_filter = $widget->get_meta_object()->get_label_alias();
+				if ($widget->is_of_type('Data') && count($widget->get_attributes_for_quick_search()) > 0){
+					foreach ($widget->get_attributes_for_quick_search() as $attr){
+						$quick_search_filter .= ($quick_search_filter ? ',' : '') . $attr;
+					}
+				}
+				if ($quick_search_filter){
+					$filters[$quick_search_filter][] = $quick_search;
+				} else {
+					throw new TemplateError('Cannot perform quick search on object "' . $widget->get_meta_object()->get_alias_with_namespace() . '": either mark one of the attributes as a label in the model or set inlude_in_quick_search = true for one of the filters in the widget definition!');
+				}
+			}
+		
+			// TODO this is a dirty hack. The special treatment for trees needs to move completely to the respective class
+			if ($widget && $widget->get_widget_type() == 'DataTree' && !$filters['PARENT']){
+				$filters['PARENT'][] = $widget->get_tree_root_uid();
+			}
+			
+			if ($widget){
+				$data_sheet = $widget->prepare_data_sheet_to_read();
+			} else {
+				$data_sheet = $this->exface()->data()->create_data_sheet($this->exface()->model()->get_object($object_id));
+			}
+			
+			// Set filters
+			foreach ($filters as $fltr_attr => $fltr){
+				foreach ($fltr as $val){
+					$data_sheet->add_filter_from_string($fltr_attr, $val);
+				}
+			}
+			
+			// Set sorting options
+			$sort_by = $this->get_request_sorting_sort_by();
+			$order = $this->get_request_sorting_direction();
+			if ($sort_by && $order){
+				$sort_by = explode(',', $sort_by);
+				$order = explode(',', $order);
+				foreach ($sort_by as $nr => $sort){
+					$data_sheet->get_sorters()->add_from_string($sort, $order[$nr]);
+				}
+			}
+			
+			// Set pagination options
+			$data_sheet->set_row_offset($this->get_request_paging_offset());
+			$data_sheet->set_rows_on_page($this->get_request_paging_rows());
+		
+			// Look for actual data rows in the request
+			if ($object_id){
+				if ($this->exface()->get_request_params()['data'] && !is_array($this->exface()->get_request_params()['data'])){
+					if ($decoded = @json_decode($this->exface()->get_request_params()['data'], true));
+					$this->exface()->set_request_param('data', $decoded);
+				}
+				if (is_array($this->exface()->get_request_params()['data'])){
+					if (is_array($this->exface()->get_request_params()['data']['rows'])){
+						$data_sheet->add_rows($this->exface()->get_request_params()['data']['rows']);
+					}
+				} else {
+					// DEPRECATED TODO Do not use default form posting for saving data! Always create a data array via javascript.
+					$row = $this->exface()->get_request_params();
+					foreach ($row as $fld => $val){
+						try {
+							$attr = $data_sheet->get_meta_object()->get_attribute($fld);
+						} catch (\Exception $e){
+							unset($row[$fld]);
+							continue;
+						}
+						
+						if (!$attr){
+							unset($row[$fld]);
+							continue;
+						}
+						
+						$row[$fld] = !is_array($val) ? html_entity_decode($val) : $val;
+					}
+					$data_sheet->add_row($row);
+				}
+			}
+			$this->request_data_sheet = $data_sheet;
+		}
+		
+		return $this->request_data_sheet;
+	}
+	
+	public function process_request($page_id=NULL, $widget_id=NULL, $action_alias=NULL){
+		// Look for basic request parameters
+		$called_in_resource_id = $page_id ? $page_id : $this->get_request_page_id();
+		$called_by_widget_id = $widget_id ? $widget_id : $this->get_request_widget_id();
+		$action_alias = $action_alias ? $action_alias : $this->get_request_action_alias();
+
+		$object_id = $this->get_request_object_id();
+		if ($this->get_request_id()) $this->exface()->set_request_id($this->get_request_id());
+		
+		// Remove system variables from the request. These are ones a tempalte always adds to the request for it's own needs.
+		// They should be defined in the init() method of the template
+		foreach($this->get_request_system_vars() as $var){
+			$this->exface()->remove_request_param($var);
+		}
+
+		if ($called_in_resource_id && $called_by_widget_id){
+			$widget = $this->exface()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
+			if (!$object_id) $object_id = $widget->get_meta_object()->get_id();
+			if ($widget instanceof iTriggerAction && (!$action_alias || strtolower($action_alias) == strtolower($widget->get_action()->get_alias_with_namespace()))){
+				$action = $widget->get_action();
+			}
+		}
+		
+		if (!$action){
+			$exface = $this->exface();
+			$action = ActionFactory::create_from_string($exface, $action_alias, ($widget ? $widget : null));
+		}
+		
+		// Give 
+		$action->set_template_alias($this->get_alias_with_namespace());
+		
+		// See if the widget needs to be prefilled
+		if ($action->implements_interface('iUsePrefillData') && $prefill_data = $this->get_request_prefill_data($widget)){
+			$action->set_prefill_data_sheet($prefill_data);
+		}
+	
+		if (!$action){
+			throw new TemplateError('Cannot perform action!');
+		}
+		
+		// Read the input data from the request
+		$data_sheet = $this->get_data_sheet_from_request($object_id, $widget);
+		if ($data_sheet){
+			if ($action->get_input_data_sheet()){
+				$action->get_input_data_sheet()->import_rows($data_sheet);
+			} else {
+				$action->set_input_data_sheet($data_sheet);
+			}
+		}
+		// Check, if the action has a widget. If not, give it the widget from the request
+		if ($action->implements_interface('iShowWidget') && !$action->get_widget() && $widget){
+			$action->set_widget($widget);
+		}
+	
+		$this->set_response_from_action($action);
+		return $this->get_response();
+	}
+	
+	protected function set_response_from_action(ActionInterface $action){
+		
+		$error_msg = null;
+		$warning_msg = null;
+		try {
+			$output = $action->get_result_output();
+		} catch (exfError $e){
+			$error_msg = $e->getMessage();
+			$error_trace = $e->getTraceAsString();
+		} catch (exfWarning $w){
+			$warning_msg = $w->getMessage();
+		}
+		
+		if (!$output && $action->get_result_message()){			
+			$response = array();
+			if ($error_msg || $warning_msg){
+				$response['error'] = $error_msg;
+				$response['warning'] = $warning_msg;
+			} else {
+				$response['success'] = $action->get_result_message();
+				if ($action->is_undoable()){
+					$response['undoable'] = '1';
+				}
+			}
+			// Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
+			// there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)
+			$output = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
+		}
+		
+		$this->set_response($error_msg ? $error_msg . "\n" . $error_trace : $output);
+	} 
+	
+	/**
+	 * Returns the prefill data from the request or FALSE if no prefill data was sent
+	 * @param AbstractWidget $widget_to_prefill
+	 * @return DataSheetInterface | boolean
+	 */
+	public function get_request_prefill_data(AbstractWidget $widget_to_prefill){	
+		// Look for prefill data
+		$prefill_string = $this->exface()->get_request_params()['prefill'];
+		if ($prefill_string && $prefill_uxon = UxonObject::from_anything($prefill_string)){
+			$exface = $this->exface();
+			$prefill_data = DataSheetFactory::create_from_stdClass($exface, $prefill_uxon);
+			$this->exface()->remove_request_param('prefill');
+			
+			if ($prefill_data){
+				// Add columns to be prefilled to the data sheet from the request
+				$prefill_data = $widget_to_prefill->prepare_data_sheet_to_prefill($prefill_data);
+				// If new colums are added, the sheet is marked as outdated, so we need to fetch the data from the data source
+				if (!$prefill_data->is_up_to_date()){
+					$prefill_data->add_filter_in_from_string($prefill_data->get_meta_object()->get_uid_alias(), $prefill_data->get_column_values($prefill_data->get_meta_object()->get_uid_alias()));
+					$prefill_data->data_read();
+				}
+				$this->request_prefill_data = $prefill_data;
+			} else {
+				$this->request_prefill_data = false;
+			}
+		}
+		
+		// It is important to save the prefill data sheet in the request, because multiple action can be performed in one request
+		// and they all will need the prefill data, not just the first one.
+		return $this->request_prefill_data;
+	}
+	
+	/**
+	 * Returns an array of key-value-pairs for filters contained in the current HTTP request (e.g. [ "DATE_FROM" => ">01.01.2010", "LABEL" => "axenox", ... ]
+	 * @return array
+	 */
+	public function get_request_filters(){
+		// Filters a passed as request values with a special prefix: fltr01_, fltr02_, etc.
+		if (count($this->request_filters_array) == 0){
+			foreach($this->exface()->get_request_params() as $var => $val){
+				if (strpos($var, 'fltr') === 0){
+					$this->request_filters_array[substr($var, 7)][] = urldecode($val);
+					$this->exface()->remove_request_param($var);
+				} 
+			}
+		}
+		return $this->request_filters_array;
+	}
+	
+	public function get_request_quick_search_value(){
+		if (!$this->request_quick_search_value){
+			$this->request_quick_search_value = !is_null($this->exface()->get_request_params()['q']) ? $this->exface()->get_request_params()['q'] : NULL;
+			$this->exface()->remove_request_param('q');
+		}
+		return $this->request_quick_search_value;
+	}
+	
+	public function get_class_prefix() {
+		return $this->class_prefix;
+	}
+	
+	public function set_class_prefix($value) {
+		$this->class_prefix = $value;
+		return $this;
+	}
+	
+	public function get_class_namespace() {
+		return $this->class_namespace;
+	}
+	
+	public function set_class_namespace($value) {
+		$this->class_namespace = $value;
+	}
+	
+	public function get_request_paging_rows(){
+		if (!$this->request_paging_rows){
+			$this->request_paging_rows = !is_null($this->exface()->get_request_params()['rows']) ? intval($this->exface()->get_request_params()['rows']) : 0;
+			$this->exface()->remove_request_param('rows');
+		}
+		return $this->request_paging_rows;
+	}
+	
+	public function get_request_sorting_sort_by(){
+		if (!$this->request_sorting_sort_by){
+			$this->request_sorting_sort_by = !is_null($this->exface()->get_request_param('sort')) ? strval($this->exface()->get_request_param('sort')) : '';
+			$this->exface()->remove_request_param('sort');
+		}
+		return $this->request_sorting_sort_by;
+	}
+	
+	public function get_request_sorting_direction(){
+		if (!$this->request_sorting_direction){
+			$this->request_sorting_direction = !is_null($this->exface()->get_request_param('order')) ? strval($this->exface()->get_request_param('order')) : '';
+			$this->exface()->remove_request_param('order');
+		}
+		return $this->request_sorting_direction;
+	}
+	
+	public function get_request_paging_offset(){
+		if (!$this->request_paging_offset){
+			$page = !is_null($this->exface()->get_request_params()['page']) ? intval($this->exface()->get_request_params()['page']) : 1;
+			$this->exface()->remove_request_param('page');
+			$this->request_paging_offset = ($page-1)*$this->get_request_paging_rows();
+		}
+		return $this->request_paging_offset;
+	}
+	
+	public function get_request_object_id(){
+		if (!$this->request_object_id){
+			$this->request_object_id =  !is_null($this->exface()->get_request_params()['object']) ? $this->exface()->get_request_params()['object'] : $_POST['data']['oId'];
+			$this->exface()->remove_request_param('object');
+		}
+		return $this->request_object_id;
+	}
+	
+	public function get_request_page_id(){
+		if (!$this->request_page_id){
+			$this->request_page_id = !is_null($this->exface()->get_request_params()['resource']) ? intval($this->exface()->get_request_params()['resource']) : NULL;
+			$this->exface()->remove_request_param('resource');
+		}
+		return $this->request_page_id;
+	}
+	
+	public function get_request_widget_id(){
+		if (!$this->request_widget_id){
+			$this->request_widget_id = !is_null($this->exface()->get_request_params()['element']) ? urldecode($this->exface()->get_request_params()['element']) : '';
+			$this->exface()->remove_request_param('element');
+		}
+		return $this->request_widget_id;
+	}
+	
+	public function get_request_action_alias(){
+		if (!$this->request_action_alias){
+			$this->request_action_alias = urldecode($this->exface()->get_request_params()['action']);
+			$this->exface()->remove_request_param('action');
+		}
+		return $this->request_action_alias;
+	}
+	
+	public function get_request_system_vars() {
+		return $this->request_system_vars;
+	}
+	
+	public function set_request_system_vars(array $var_names) {
+		$this->request_system_vars = $var_names;
+		return $this;
+	}  
+	
+	public function get_request_id() {
+		if (!$this->request_id){
+			$this->request_id = urldecode($this->exface()->get_request_params()['exfrid']);
+			$this->exface()->remove_request_param('exfrid');
+		}
+		return $this->request_id;
+	}	
+	
+	public function encode_data($serializable_data){
+		return json_encode($serializable_data);
+	}
+}
+?>

@@ -1,10 +1,10 @@
-<?php namespace exface\Apps\exface\AbstractAjaxTemplate\Template;
+<?php namespace exface\AbstractAjaxTemplate\Template;
 
 use exface\Core\AbstractTemplate;
 use exface\Core\Exceptions\TemplateError;
 use exface\Core\Interfaces\Actions\ActionInterface;
-use exface\Widgets\Data;
-use exface\Widgets\AbstractWidget;
+use exface\Core\Widgets\Data;
+use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\Core\Exceptions\exfError;
@@ -31,7 +31,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	protected $request_prefill_data = NULL;
 	protected $request_system_vars = array();
 	
-	function draw(\exface\Widgets\AbstractWidget $widget){
+	function draw(\exface\Core\Widgets\AbstractWidget $widget){
 		$output = '';
 		
 		if (!$this->check_widget_implementation($widget->get_widget_type())){
@@ -50,18 +50,18 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	
 	/**
 	 * Generates the JavaScript for a given Widget
-	 * @param \exface\Widgets\AbstractWidget $widget
+	 * @param \exface\Core\Widgets\AbstractWidget $widget
 	 */
-	function generate_js(\exface\Widgets\AbstractWidget $widget){
+	function generate_js(\exface\Core\Widgets\AbstractWidget $widget){
 		$instance = $this->get_element($widget);
 		return $instance->generate_js();
 	}
 	
 	/**
 	 * Generates the HTML for a given Widget
-	 * @param \exface\Widgets\AbstractWidget $widget
+	 * @param \exface\Core\Widgets\AbstractWidget $widget
 	 */
-	function generate_html(\exface\Widgets\AbstractWidget $widget){
+	function generate_html(\exface\Core\Widgets\AbstractWidget $widget){
 		$instance = $this->get_element($widget);
 		return $instance->generate_html();
 	}
@@ -70,7 +70,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * Generates the declaration of the JavaScript sources
 	 * @return string
 	 */
-	public function draw_headers(\exface\Widgets\AbstractWidget $widget){
+	public function draw_headers(\exface\Core\Widgets\AbstractWidget $widget){
 		$instance = $this->get_element($widget, $widget->get_page_id());
 		return implode("\n", array_unique($instance->generate_headers()));
 	}
@@ -80,10 +80,10 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * Elements are cached within the template engine, so multiple calls to this method do
 	 * not cause the element to get recreated from scratch. This improves performance.
 	 * 
-	 * @param \exface\Widgets\AbstractWidget $widget
+	 * @param \exface\Core\Widgets\AbstractWidget $widget
 	 * @return \exface\Templates\jeasyui\Widgets\jeasyuiAbstractWidget
 	 */
-	function get_element(\exface\Widgets\AbstractWidget $widget){
+	function get_element(\exface\Core\Widgets\AbstractWidget $widget){
 		if (!$this->elements[$widget->get_page_id()][$widget->get_id()]){
 			$elem_class = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix() . $widget->get_widget_type();
 			// if the required widget is not found, create an abstract widget instead

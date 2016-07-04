@@ -1,19 +1,18 @@
 {
-    "name": "ExFace/AbstractAjaxTemplate",
-    "description": "Template skeleton for AJAX HTML-Templates for ExFace Apps",
-    "type": "library",
-    "license": "GPL-3.0+",
-    "authors": [
-        {
-            "name": "Andrej Kabachnik",
-            "email": "kabachnik@gmail.com",
-            "role": "Creator"
-        }
-    ],
-    "support": {
-        "issues": "https://github.com/exface/AbstractAjaxTemplate/issues"
-    },
-    "require": {
-        "exface/core": ">0.9"
-    }
+	"name" : "ExFace/AbstractAjaxTemplate",
+	"description" : "Template skeleton for AJAX HTML-Templates for ExFace Apps",
+	"type" : "library",
+	"license" : "GPL-3.0+",
+	"authors" : [{
+			"name" : "Andrej Kabachnik",
+			"email" : "kabachnik@gmail.com",
+			"role" : "Creator"
+		}
+	],
+	"support" : {
+		"issues" : "https://github.com/exface/AbstractAjaxTemplate/issues"
+	},
+	"require" : {
+		"exface/core" : ">=1.0"
+	}
 }

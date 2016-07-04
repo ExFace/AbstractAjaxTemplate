@@ -1,6 +1,6 @@
 <?php namespace exface\AbstractAjaxTemplate\Template;
 
-use exface\Core\AbstractTemplate;
+use exface\Core\CommonLogic\AbstractTemplate;
 use exface\Core\Exceptions\TemplateError;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Widgets\Data;
@@ -9,8 +9,8 @@ use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\Core\Exceptions\exfError;
 use exface\Core\Exceptions\exfWarning;
-use exface\Core\UxonObject;
-use exface\Core\WidgetLink;
+use exface\Core\CommonLogic\UxonObject;
+use exface\Core\CommonLogic\WidgetLink;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Factories\ActionFactory;
 

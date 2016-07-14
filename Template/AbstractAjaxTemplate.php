@@ -113,7 +113,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		if ($elem = $this->elements[$page_id][$widget_id]){
 			return $elem;
 		} else {
-			if ($widget_id = $this->exface()->ui()->get_widget($widget_id, $page_id)){
+			if ($widget_id = $this->get_workbench()->ui()->get_widget($widget_id, $page_id)){
 				return $this->get_element($widget_id);
 			} else {
 				return false;
@@ -137,7 +137,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	}
 	
 	public function create_link_internal($page_id, $url_params=''){
-		return $this->exface()->cms()->create_link_internal($page_id, $url_params);
+		return $this->get_workbench()->cms()->create_link_internal($page_id, $url_params);
 	}
 
 	public function get_data_sheet_from_request($object_id = NULL, $widget = NULL) {
@@ -167,7 +167,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			if ($widget){
 				$data_sheet = $widget->prepare_data_sheet_to_read();
 			} else {
-				$data_sheet = $this->exface()->data()->create_data_sheet($this->exface()->model()->get_object($object_id));
+				$data_sheet = $this->get_workbench()->data()->create_data_sheet($this->get_workbench()->model()->get_object($object_id));
 			}
 			
 			// Set filters
@@ -194,17 +194,17 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		
 			// Look for actual data rows in the request
 			if ($object_id){
-				if ($this->exface()->get_request_params()['data'] && !is_array($this->exface()->get_request_params()['data'])){
-					if ($decoded = @json_decode($this->exface()->get_request_params()['data'], true));
-					$this->exface()->set_request_param('data', $decoded);
+				if ($this->get_workbench()->get_request_params()['data'] && !is_array($this->get_workbench()->get_request_params()['data'])){
+					if ($decoded = @json_decode($this->get_workbench()->get_request_params()['data'], true));
+					$this->get_workbench()->set_request_param('data', $decoded);
 				}
-				if (is_array($this->exface()->get_request_params()['data'])){
-					if (is_array($this->exface()->get_request_params()['data']['rows'])){
-						$data_sheet->add_rows($this->exface()->get_request_params()['data']['rows']);
+				if (is_array($this->get_workbench()->get_request_params()['data'])){
+					if (is_array($this->get_workbench()->get_request_params()['data']['rows'])){
+						$data_sheet->add_rows($this->get_workbench()->get_request_params()['data']['rows']);
 					}
 				} else {
 					// DEPRECATED TODO Do not use default form posting for saving data! Always create a data array via javascript.
-					$row = $this->exface()->get_request_params();
+					$row = $this->get_workbench()->get_request_params();
 					foreach ($row as $fld => $val){
 						try {
 							$attr = $data_sheet->get_meta_object()->get_attribute($fld);
@@ -236,16 +236,16 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		$action_alias = $action_alias ? $action_alias : $this->get_request_action_alias();
 
 		$object_id = $this->get_request_object_id();
-		if ($this->get_request_id()) $this->exface()->set_request_id($this->get_request_id());
+		if ($this->get_request_id()) $this->get_workbench()->set_request_id($this->get_request_id());
 		
 		// Remove system variables from the request. These are ones a tempalte always adds to the request for it's own needs.
 		// They should be defined in the init() method of the template
 		foreach($this->get_request_system_vars() as $var){
-			$this->exface()->remove_request_param($var);
+			$this->get_workbench()->remove_request_param($var);
 		}
 
 		if ($called_in_resource_id && $called_by_widget_id){
-			$widget = $this->exface()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
+			$widget = $this->get_workbench()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
 			if (!$object_id) $object_id = $widget->get_meta_object()->get_id();
 			if ($widget instanceof iTriggerAction && (!$action_alias || strtolower($action_alias) == strtolower($widget->get_action()->get_alias_with_namespace()))){
 				$action = $widget->get_action();
@@ -253,7 +253,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		}
 		
 		if (!$action){
-			$exface = $this->exface();
+			$exface = $this->get_workbench();
 			$action = ActionFactory::create_from_string($exface, $action_alias, ($widget ? $widget : null));
 		}
 		
@@ -326,11 +326,11 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 */
 	public function get_request_prefill_data(AbstractWidget $widget_to_prefill){	
 		// Look for prefill data
-		$prefill_string = $this->exface()->get_request_params()['prefill'];
+		$prefill_string = $this->get_workbench()->get_request_params()['prefill'];
 		if ($prefill_string && $prefill_uxon = UxonObject::from_anything($prefill_string)){
-			$exface = $this->exface();
+			$exface = $this->get_workbench();
 			$prefill_data = DataSheetFactory::create_from_stdClass($exface, $prefill_uxon);
-			$this->exface()->remove_request_param('prefill');
+			$this->get_workbench()->remove_request_param('prefill');
 			
 			if ($prefill_data){
 				// Add columns to be prefilled to the data sheet from the request
@@ -358,10 +358,10 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	public function get_request_filters(){
 		// Filters a passed as request values with a special prefix: fltr01_, fltr02_, etc.
 		if (count($this->request_filters_array) == 0){
-			foreach($this->exface()->get_request_params() as $var => $val){
+			foreach($this->get_workbench()->get_request_params() as $var => $val){
 				if (strpos($var, 'fltr') === 0){
 					$this->request_filters_array[substr($var, 7)][] = urldecode($val);
-					$this->exface()->remove_request_param($var);
+					$this->get_workbench()->remove_request_param($var);
 				} 
 			}
 		}
@@ -370,8 +370,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	
 	public function get_request_quick_search_value(){
 		if (!$this->request_quick_search_value){
-			$this->request_quick_search_value = !is_null($this->exface()->get_request_params()['q']) ? $this->exface()->get_request_params()['q'] : NULL;
-			$this->exface()->remove_request_param('q');
+			$this->request_quick_search_value = !is_null($this->get_workbench()->get_request_params()['q']) ? $this->get_workbench()->get_request_params()['q'] : NULL;
+			$this->get_workbench()->remove_request_param('q');
 		}
 		return $this->request_quick_search_value;
 	}
@@ -395,32 +395,32 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	
 	public function get_request_paging_rows(){
 		if (!$this->request_paging_rows){
-			$this->request_paging_rows = !is_null($this->exface()->get_request_params()['rows']) ? intval($this->exface()->get_request_params()['rows']) : 0;
-			$this->exface()->remove_request_param('rows');
+			$this->request_paging_rows = !is_null($this->get_workbench()->get_request_params()['rows']) ? intval($this->get_workbench()->get_request_params()['rows']) : 0;
+			$this->get_workbench()->remove_request_param('rows');
 		}
 		return $this->request_paging_rows;
 	}
 	
 	public function get_request_sorting_sort_by(){
 		if (!$this->request_sorting_sort_by){
-			$this->request_sorting_sort_by = !is_null($this->exface()->get_request_param('sort')) ? strval($this->exface()->get_request_param('sort')) : '';
-			$this->exface()->remove_request_param('sort');
+			$this->request_sorting_sort_by = !is_null($this->get_workbench()->get_request_param('sort')) ? strval($this->get_workbench()->get_request_param('sort')) : '';
+			$this->get_workbench()->remove_request_param('sort');
 		}
 		return $this->request_sorting_sort_by;
 	}
 	
 	public function get_request_sorting_direction(){
 		if (!$this->request_sorting_direction){
-			$this->request_sorting_direction = !is_null($this->exface()->get_request_param('order')) ? strval($this->exface()->get_request_param('order')) : '';
-			$this->exface()->remove_request_param('order');
+			$this->request_sorting_direction = !is_null($this->get_workbench()->get_request_param('order')) ? strval($this->get_workbench()->get_request_param('order')) : '';
+			$this->get_workbench()->remove_request_param('order');
 		}
 		return $this->request_sorting_direction;
 	}
 	
 	public function get_request_paging_offset(){
 		if (!$this->request_paging_offset){
-			$page = !is_null($this->exface()->get_request_params()['page']) ? intval($this->exface()->get_request_params()['page']) : 1;
-			$this->exface()->remove_request_param('page');
+			$page = !is_null($this->get_workbench()->get_request_params()['page']) ? intval($this->get_workbench()->get_request_params()['page']) : 1;
+			$this->get_workbench()->remove_request_param('page');
 			$this->request_paging_offset = ($page-1)*$this->get_request_paging_rows();
 		}
 		return $this->request_paging_offset;
@@ -428,32 +428,32 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	
 	public function get_request_object_id(){
 		if (!$this->request_object_id){
-			$this->request_object_id =  !is_null($this->exface()->get_request_params()['object']) ? $this->exface()->get_request_params()['object'] : $_POST['data']['oId'];
-			$this->exface()->remove_request_param('object');
+			$this->request_object_id =  !is_null($this->get_workbench()->get_request_params()['object']) ? $this->get_workbench()->get_request_params()['object'] : $_POST['data']['oId'];
+			$this->get_workbench()->remove_request_param('object');
 		}
 		return $this->request_object_id;
 	}
 	
 	public function get_request_page_id(){
 		if (!$this->request_page_id){
-			$this->request_page_id = !is_null($this->exface()->get_request_params()['resource']) ? intval($this->exface()->get_request_params()['resource']) : NULL;
-			$this->exface()->remove_request_param('resource');
+			$this->request_page_id = !is_null($this->get_workbench()->get_request_params()['resource']) ? intval($this->get_workbench()->get_request_params()['resource']) : NULL;
+			$this->get_workbench()->remove_request_param('resource');
 		}
 		return $this->request_page_id;
 	}
 	
 	public function get_request_widget_id(){
 		if (!$this->request_widget_id){
-			$this->request_widget_id = !is_null($this->exface()->get_request_params()['element']) ? urldecode($this->exface()->get_request_params()['element']) : '';
-			$this->exface()->remove_request_param('element');
+			$this->request_widget_id = !is_null($this->get_workbench()->get_request_params()['element']) ? urldecode($this->get_workbench()->get_request_params()['element']) : '';
+			$this->get_workbench()->remove_request_param('element');
 		}
 		return $this->request_widget_id;
 	}
 	
 	public function get_request_action_alias(){
 		if (!$this->request_action_alias){
-			$this->request_action_alias = urldecode($this->exface()->get_request_params()['action']);
-			$this->exface()->remove_request_param('action');
+			$this->request_action_alias = urldecode($this->get_workbench()->get_request_params()['action']);
+			$this->get_workbench()->remove_request_param('action');
 		}
 		return $this->request_action_alias;
 	}
@@ -469,8 +469,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	
 	public function get_request_id() {
 		if (!$this->request_id){
-			$this->request_id = urldecode($this->exface()->get_request_params()['exfrid']);
-			$this->exface()->remove_request_param('exfrid');
+			$this->request_id = urldecode($this->get_workbench()->get_request_params()['exfrid']);
+			$this->get_workbench()->remove_request_param('exfrid');
 		}
 		return $this->request_id;
 	}	

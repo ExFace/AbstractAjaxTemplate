@@ -84,7 +84,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * @return \exface\Templates\jeasyui\Widgets\jeasyuiAbstractWidget
 	 */
 	function get_element(\exface\Core\Widgets\AbstractWidget $widget){
-		if (!$this->elements[$widget->get_page_id()][$widget->get_id()]){
+		if (!isset($this->elements[$widget->get_page_id()]) || !isset($this->elements[$widget->get_page_id()][$widget->get_id()])){
 			$elem_class = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix() . $widget->get_widget_type();
 			// if the required widget is not found, create an abstract widget instead
 			if (!class_exists($elem_class)){

@@ -164,6 +164,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				$filters['PARENT'][] = $widget->get_tree_root_uid();
 			}
 			
+			/* @var $data_sheet \exface\Core\CommonLogic\DataSheets\DataSheet */
 			if ($widget){
 				$data_sheet = $widget->prepare_data_sheet_to_read();
 			} else {
@@ -200,7 +201,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				}
 				if (is_array($this->get_workbench()->get_request_params()['data'])){
 					if (is_array($this->get_workbench()->get_request_params()['data']['rows'])){
-						$data_sheet->add_rows($this->get_workbench()->get_request_params()['data']['rows']);
+						$rows = $this->get_workbench()->get_request_params()['data']['rows'];
+						// If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
+						if (count($rows) == 1){
+							$rows = $this->split_rows_by_multivalue_fields($rows);
+						}
+						$data_sheet->add_rows($rows);
 					}
 				} else {
 					// DEPRECATED TODO Do not use default form posting for saving data! Always create a data array via javascript.
@@ -220,13 +226,38 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 						
 						$row[$fld] = !is_array($val) ? html_entity_decode($val) : $val;
 					}
-					$data_sheet->add_row($row);
+					$rows = $this->split_rows_by_multivalue_fields(array($row), $data_sheet->get_uid_column_name());
+					$data_sheet->add_rows($rows);
 				}
 			}
 			$this->request_data_sheet = $data_sheet;
 		}
 		
 		return $this->request_data_sheet;
+	}
+	
+	protected function split_rows_by_multivalue_fields(array $rows){
+		// If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
+		$result = $rows;
+		if (count($rows) == 1){
+			$row = reset($rows);
+			foreach ($row as $field => $val){
+				if (is_array($val)){
+					foreach ($val as $i => $v){
+						foreach ($rows as $nr => $r){
+							$new_nr = $nr+($nr*$i+$i);
+							$result[$new_nr] = $r;
+							$result[$new_nr][$field] = $v;
+						}
+					}
+				}
+			}
+		}
+		return $result;
+	}
+	
+	protected function split_concatennated_uid_value($string){
+		return explode(',', $string);
 	}
 	
 	public function process_request($page_id=NULL, $widget_id=NULL, $action_alias=NULL){

@@ -93,7 +93,6 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			}
 			
 			$instance = new $elem_class($widget, $this);
-			$instance->init();
 			$this->elements[$widget->get_page_id()][$widget->get_id()] = $instance;
 		}
 		

@@ -4,29 +4,35 @@ use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\TemplateInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
+use exface\Core\Exceptions\TemplateError;
 
 abstract class AbstractJqueryElement {
 	
 	private $exf_widget = null;
 	private $template = null;
-	private $width_relative_unit = 400;
-	private $width_default = 1;
-	private $height_relative_unit = 32;
-	private $height_default = 1;
-	private $hint_max_chars_in_line = 60;
+	private $width_relative_unit = null;
+	private $width_default = null;
+	private $height_relative_unit = null;
+	private $height_default = null;
+	private $hint_max_chars_in_line = null;
 	private $on_change_script = '';
 	private $on_resize_script = '';
+	private $ajax_url = null;
+	private $function_prefix = null;
+	private $id = null;
 	
-	function __construct(WidgetInterface $widget, TemplateInterface $template){
+	public function __construct(WidgetInterface $widget, TemplateInterface $template){
 		$this->exf_widget = $widget;
 		$this->template = $template;
+		$this->init();
 	}
 	
 	/**
-	 * IDEA not sure, wheter we need this function... If it does not get used at all, remove it!
+	 * This method is run every time the element is created. Override it to set inherited options.
 	 */
-	public function init(){
-	
+	protected function init(){
+		
 	}
 	
 	/**
@@ -76,7 +82,7 @@ abstract class AbstractJqueryElement {
 	
 	/**
 	 * Returns the template engine
-	 * @return TemplateInterface
+	 * @return AbstractAjaxTemplate
 	 */
 	public function get_template(){
 		return $this->template;
@@ -99,6 +105,9 @@ abstract class AbstractJqueryElement {
 	}
 	
 	public function get_hint_max_chars_in_line() {
+		if (is_null($this->hint_max_chars_in_line)){
+			$this->hint_max_chars_in_line = $this->get_template()->get_config()->get_option('HINT_MAX_CHARS_IN_LINE');
+		}
 		return $this->hint_max_chars_in_line;
 	}
 	
@@ -135,6 +144,55 @@ abstract class AbstractJqueryElement {
 		}
 		$hint = trim($hint);
 		return $hint;
+	}
+	
+	public function get_ajax_url() {
+		if (is_null($this->ajax_url)){
+			$this->ajax_url = $this->get_template()->get_config()->get_option('DEFAULT_AJAX_URL');
+		}
+		$request_id = $this->get_template()->get_workbench()->get_request_id();
+		return $this->ajax_url . ($request_id ? '&exfrid=' . $request_id : '');
+	}
+	
+	public function set_ajax_url($value) {
+		$this->ajax_url = $value;
+	}
+	
+	function get_function_prefix(){
+		if (is_null($this->function_prefix)){
+			$this->function_prefix = str_replace($this->get_template()->get_config()->get_option('FORBIDDEN_CHARS_IN_FUNCTION_PREFIX'), '_', $this->get_id()) . '_';
+		}
+		return $this->function_prefix;
+	}
+	
+	/**
+	 * Returns the id of the HTML-element representing the widget. Passing a widget id makes the method return the id of the element
+	 * that belongs to that widget.
+	 * 
+	 * @param string $widget_id
+	 * @return string
+	 */
+	function get_id($widget_id = null){
+		if (!is_null($widget_id)){
+			if (!$element = $this->get_template()->get_element_by_widget_id($widget_id, $this->get_page_id())){
+				throw new TemplateError('No element for widget id "' . $widget_id . '" found on page "' . $this->get_page_id() . '"!');	
+				return '';
+			}
+			return $element->get_id();
+		}
+		if (is_null($this->id)){
+			$this->id = $this->clean_id($this->get_widget()->get_id()) . ($this->get_template()->get_workbench()->get_request_id() ? '-' . $this->get_template()->get_workbench()->get_request_id() : '');
+		}
+		return $this->id;
+	}
+	
+	/**
+	 * Replaces all characters, which are not supported in the ids of DOM-elements (i.e. "/" etc.)
+	 * @param string $id
+	 * @return string
+	 */
+	function clean_id($id){
+		return str_replace($this->get_template()->get_config()->get_option('FORBIDDEN_CHARS_IN_ELEMENT_ID'), '_', $id);
 	}
 	
 	/**
@@ -219,6 +277,9 @@ abstract class AbstractJqueryElement {
 	}
 	
 	public function get_height_default() {
+		if (is_null($this->height_default)){
+			$this->height_default = $this->get_template()->get_config()->get_option('HEIGHT_DEFAULT');
+		}
 		return $this->height_default;
 	}
 	
@@ -228,6 +289,9 @@ abstract class AbstractJqueryElement {
 	}
 	
 	public function get_width_default() {
+		if (is_null($this->width_default)){
+			$this->width_default = $this->get_template()->get_config()->get_option('WIDTH_DEFAULT');
+		}
 		return $this->width_default;
 	}
 	
@@ -237,10 +301,16 @@ abstract class AbstractJqueryElement {
 	}
 	
 	public function get_width_relative_unit(){
+		if (is_null($this->width_relative_unit)){
+			$this->width_relative_unit = $this->get_template()->get_config()->get_option('WIDTH_RELATIVE_UNIT');
+		}
 		return $this->width_relative_unit;
 	}
 	
 	public function get_height_relative_unit(){
+		if (is_null($this->height_relative_unit)){
+			$this->height_relative_unit = $this->get_template()->get_config()->get_option('HEIGHT_RELATIVE_UNIT');
+		}
 		return $this->height_relative_unit;
 	}
 	

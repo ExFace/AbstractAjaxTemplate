@@ -207,27 +207,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 						}
 						$data_sheet->add_rows($rows);
 					}
-				} else {
-					// DEPRECATED TODO Do not use default form posting for saving data! Always create a data array via javascript.
-					$row = $this->get_workbench()->get_request_params();
-					foreach ($row as $fld => $val){
-						try {
-							$attr = $data_sheet->get_meta_object()->get_attribute($fld);
-						} catch (\Exception $e){
-							unset($row[$fld]);
-							continue;
-						}
-						
-						if (!$attr){
-							unset($row[$fld]);
-							continue;
-						}
-						
-						$row[$fld] = !is_array($val) ? html_entity_decode($val) : $val;
-					}
-					$rows = $this->split_rows_by_multivalue_fields(array($row), $data_sheet->get_uid_column_name());
-					$data_sheet->add_rows($rows);
-				}
+				} 
 			}
 			$this->request_data_sheet = $data_sheet;
 		}

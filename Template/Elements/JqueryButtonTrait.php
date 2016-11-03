@@ -1,6 +1,7 @@
 <?php namespace exface\AbstractAjaxTemplate\Template\Elements;
 
 use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Actions\GoBack;
 
 trait JqueryButtonTrait {
 	
@@ -107,6 +108,42 @@ trait JqueryButtonTrait {
 	
 	protected function build_js_click_call_server_action(ActionInterface $action, AbstractJqueryElement $input_element){
 		$widget = $this->get_widget();
+		
+		$output = $this->build_js_request_data_collector($action, $input_element);
+		$output .= "
+						" . $this->build_js_busy_icon_show() . "
+						$.post('" . $this->get_ajax_url() ."',
+							{	
+								action: '".$widget->get_action_alias()."',
+								resource: '" . $widget->get_page_id() . "',
+								element: '" . $widget->get_id() . "',
+								object: '" . $widget->get_meta_object_id() . "',
+								data: requestData
+							},
+							function(result) {
+								var response = {};
+								try {
+									response = $.parseJSON(result);
+								} catch (e) {
+									response.error = result;
+								}
+			                   	if (response.success){
+									" . $this->build_js_close_dialog($widget, $input_element) . "
+									" . $this->build_js_input_refresh($widget, $input_element) . "
+			                       	" . $this->build_js_busy_icon_hide() . "
+									if (response.success || response.undoURL){
+			                       		" . $this->build_js_show_success_message("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
+									}
+			                    } else {
+									" . $this->build_js_busy_icon_hide() . "
+									" . $this->build_js_show_error_message('response.error', 'Server error') . "
+			                    }
+							}
+						);";
+		
+		return $output;
+		
+		/*
 		return $this->build_js_request_data_collector($action, $input_element) . "
 						" . $input_element->build_js_busy_icon_show() . "
 						$.ajax({
@@ -129,7 +166,7 @@ trait JqueryButtonTrait {
 					            " . $input_element->build_js_busy_icon_hide() . "
 			            		" . $this->build_js_show_error_message('jqXHR.responseText', 'Server error') . "
 					        }
-						});";
+						});";*/
 	}
 	
 	protected function build_js_click_show_widget(ActionInterface $action, AbstractJqueryElement $input_element){
@@ -137,7 +174,7 @@ trait JqueryButtonTrait {
 		$output = '';
 		if ($action->get_page_id() != $this->get_page_id()){
 			$output = $this->build_js_request_data_collector($action, $input_element) . $input_element->build_js_busy_icon_show() . "
-				 	window.location.href = '" . $this->get_template()->create_link_internal($action->get_page_id()) . "?prefill={\"meta_object_id\":\"" . $widget->get_meta_object_id() . "\",\"rows\":[{\"" . $widget->get_meta_object()->get_uid_alias() . "\":' + requestData.rows[0]." . $widget->get_meta_object()->get_uid_alias() . " + '}]}';";
+			 	window.location.href = '" . $this->get_template()->create_link_internal($action->get_page_id()) . "?prefill={\"meta_object_id\":\"" . $widget->get_meta_object_id() . "\",\"rows\":[{\"" . $widget->get_meta_object()->get_uid_alias() . "\":\"' + requestData.rows[0]." . $widget->get_meta_object()->get_uid_alias() . " + '\"}]}';";
 		}
 		return $output;
 	}
@@ -161,6 +198,14 @@ trait JqueryButtonTrait {
 	
 	protected function build_js_click_run_template_script(ActionInterface $action, AbstractJqueryElement $input_element){
 		return $action->print_script($input_element->get_id());
+	}
+	
+	protected function build_js_undo_url(ActionInterface $action, AbstractJqueryElement $input_element){
+		$widget = $this->get_widget();
+		if ($action->is_undoable()){
+			$undo_url = $this->get_ajax_url() . "&action=exface.Core.UndoAction&resource=".$widget->get_page_id()."&element=".$widget->get_id();
+		}
+		return $undo_url;
 	}
 	
 }

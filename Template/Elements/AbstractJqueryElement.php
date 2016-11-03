@@ -409,5 +409,29 @@ JS;
 	 */
 	abstract public function build_js_busy_icon_hide();
 	
+	/**
+	 * Returns a JS snippet showing an error notification. The body of the message may be any JavaScript or quoted text (quotes will not be
+	 * added automatically!!!).
+	 *
+	 * @param string $message_body_js
+	 * @param string $title
+	 * @return string
+	 */
+	public function build_js_show_error_message($message_body_js, $title = null){
+		return "alert(" . $message_body_js . ");";
+	}
+	
+	/**
+	 * Returns a JS snippet showing a success notification. The body of the message may be any JavaScript or quoted text (quotes will not be
+	 * added automatically!!!).
+	 *
+	 * @param string $message_body_js
+	 * @param string $title
+	 * @return string
+	 */
+	public function build_js_show_success_message($message_body_js, $title = null){
+		return '';
+	}
+	
 }
 ?>

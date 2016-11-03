@@ -21,6 +21,7 @@ abstract class AbstractJqueryElement {
 	private $ajax_url = null;
 	private $function_prefix = null;
 	private $id = null;
+	private $element_type = null;
 	
 	public function __construct(WidgetInterface $widget, TemplateInterface $template){
 		$this->exf_widget = $widget;
@@ -38,12 +39,12 @@ abstract class AbstractJqueryElement {
 	/**
 	 * Returns the complete JS code needed for the element
 	 */
-	abstract function generate_js();
+	abstract public function generate_js();
 	
 	/**
 	 * Returns the complete HTML code needed for the element
 	 */
-	abstract function generate_html();
+	abstract public function generate_html();
 	
 	/**
 	 * Returns JavaScript headers, needed for the element as an array of lines.
@@ -58,7 +59,7 @@ abstract class AbstractJqueryElement {
 	 *
 	 * @return string[]
 	 */
-	function generate_headers(){
+	public function generate_headers(){
 		$headers = array();
 		if ($this->get_widget()->is_container()){
 			foreach ($this->get_widget()->get_children() as $child){
@@ -158,11 +159,32 @@ abstract class AbstractJqueryElement {
 		$this->ajax_url = $value;
 	}
 	
-	function get_function_prefix(){
+	public function get_function_prefix(){
 		if (is_null($this->function_prefix)){
 			$this->function_prefix = str_replace($this->get_template()->get_config()->get_option('FORBIDDEN_CHARS_IN_FUNCTION_PREFIX'), '_', $this->get_id()) . '_';
 		}
 		return $this->function_prefix;
+	}
+	
+	/**
+	 * Returns the type attribute of the resulting HTML-element. In pure HTML this is only usefull for elements like
+	 * input fields (the type would be "text", "hidden", etc.), but many UI-frameworks use this kind of attribute
+	 * to identify types of widgets. Returns NULL by default.
+	 * 
+	 * @return string
+	 */
+	public function get_element_type() {
+		return $this->element_type;
+	}
+	
+	/**
+	 * 
+	 * @param string $value
+	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 */
+	public function set_element_type($value) {
+		$this->element_type = $value;
+		return $this;
 	}
 	
 	/**
@@ -374,6 +396,18 @@ JS;
 		$this->on_resize_script .= $js;
 		return $this;
 	}
+	
+	/**
+	 * Returns an JS-snippet to show a busy symbol (e.g. hourglass, spinner). This centralized method is used in various traits.
+	 * @retrun string
+	 */
+	abstract public function build_js_busy_icon_show();
+	
+	/**
+	 * Returns an JS-snippet to hide the busy symbol (e.g. hourglass, spinner). This centralized method is used in various traits.
+	 * @retrun string
+	 */
+	abstract public function build_js_busy_icon_hide();
 	
 }
 ?>

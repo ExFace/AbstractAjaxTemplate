@@ -1,11 +1,12 @@
 <?php namespace exface\AbstractAjaxTemplate\Template\Elements;
 
-use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\TemplateInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
 use exface\Core\Exceptions\TemplateError;
+use exface\Core\Exceptions\ConfigurationNotFoundError;
+use exface\Core\CommonLogic\Model\Object;
 
 abstract class AbstractJqueryElement {
 	
@@ -23,14 +24,21 @@ abstract class AbstractJqueryElement {
 	private $id = null;
 	private $element_type = null;
 	
+	/**
+	 * Creates a template element for a given widget
+	 * @param WidgetInterface $widget
+	 * @param TemplateInterface $template
+	 * @return void
+	 */
 	public function __construct(WidgetInterface $widget, TemplateInterface $template){
-		$this->exf_widget = $widget;
+		$this->set_widget($widget);
 		$this->template = $template;
 		$this->init();
 	}
 	
 	/**
 	 * This method is run every time the element is created. Override it to set inherited options.
+	 * @return void
 	 */
 	protected function init(){
 		
@@ -70,15 +78,23 @@ abstract class AbstractJqueryElement {
 	}
 	
 	/**
-	 *
-	 * @return AbstractWidget
+	 * Returns the widget, that this template element represents
+	 * @return WidgetInterface
 	 */
 	public function get_widget() {
 		return $this->exf_widget;
 	}
 	
-	public function set_widget(AbstractWidget $value) {
+	/**
+	 * Sets the widget, represented by this element. Use with great caution! This method does not reinitialize the element. It is far
+	 * safer to create a new element.
+	 * 
+	 * @param WidgetInterface $value
+	 * @return AbstractJqueryElement
+	 */
+	protected function set_widget(WidgetInterface $value) {
 		$this->exf_widget = $value;
+		return $this;
 	}
 	
 	/**
@@ -90,33 +106,39 @@ abstract class AbstractJqueryElement {
 	}
 	
 	/**
-	 * 
-	 * @return \exface\Core\CommonLogic\Model\Object
+	 * Returns the meta object of the widget, that this element represents.
+	 * @return Object
 	 */
 	public function get_meta_object(){
 		return $this->get_widget()->get_meta_object();
 	}
 	
 	/**
-	 * 
+	 * Returns the page id
 	 * @return string
 	 */
 	public function get_page_id() {
 		return $this->get_widget()->get_page()->get_id();
 	}
 	
-	public function get_hint_max_chars_in_line() {
+	/**
+	 * Returns the maximum number of characters in one line for hint messages in this template
+	 * @return string
+	 */
+	protected function get_hint_max_chars_in_line() {
 		if (is_null($this->hint_max_chars_in_line)){
 			$this->hint_max_chars_in_line = $this->get_template()->get_config()->get_option('HINT_MAX_CHARS_IN_LINE');
 		}
 		return $this->hint_max_chars_in_line;
 	}
 	
-	public function set_hint_max_chars_in_line($value) {
-		$this->hint_max_chars_in_line = $value;
-	}
-	
-	public function get_hint($hint_text = NULL, $remove_linebreaks = false){
+	/**
+	 * Returns a ready-to-use hint text, that will generally be included in float-overs for template elements
+	 * @param unknown $hint_text
+	 * @param string $remove_linebreaks
+	 * @return string
+	 */
+	public function build_hint_text($hint_text = NULL, $remove_linebreaks = false){
 		$max_hint_len = $this->get_hint_max_chars_in_line();
 		$hint = $hint_text ? $hint_text : $this->get_widget()->get_hint();
 		$hint = str_replace('"', '\"', $hint);
@@ -147,6 +169,10 @@ abstract class AbstractJqueryElement {
 		return $hint;
 	}
 	
+	/**
+	 * Returns the default URL for AJAX requests by this element (relative to site root)
+	 * @return string
+	 */
 	public function get_ajax_url() {
 		if (is_null($this->ajax_url)){
 			$this->ajax_url = $this->get_template()->get_config()->get_option('DEFAULT_AJAX_URL');
@@ -155,11 +181,19 @@ abstract class AbstractJqueryElement {
 		return $this->ajax_url . ($request_id ? '&exfrid=' . $request_id : '');
 	}
 	
+	/**
+	 * Changes the default URL for AJAX requests by this element (relative to site root)
+	 * @param string $value
+	 */
 	public function set_ajax_url($value) {
 		$this->ajax_url = $value;
 	}
 	
-	public function get_function_prefix(){
+	/**
+	 * Returns a unique prefix for JavaScript functions to be used with this element
+	 * @return string
+	 */
+	public function build_js_function_prefix(){
 		if (is_null($this->function_prefix)){
 			$this->function_prefix = str_replace($this->get_template()->get_config()->get_option('FORBIDDEN_CHARS_IN_FUNCTION_PREFIX'), '_', $this->get_id()) . '_';
 		}
@@ -170,7 +204,6 @@ abstract class AbstractJqueryElement {
 	 * Returns the type attribute of the resulting HTML-element. In pure HTML this is only usefull for elements like
 	 * input fields (the type would be "text", "hidden", etc.), but many UI-frameworks use this kind of attribute
 	 * to identify types of widgets. Returns NULL by default.
-	 * 
 	 * @return string
 	 */
 	public function get_element_type() {
@@ -178,9 +211,9 @@ abstract class AbstractJqueryElement {
 	}
 	
 	/**
-	 * 
+	 * Sets the element type
 	 * @param string $value
-	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 * @return AbstractJqueryElement
 	 */
 	public function set_element_type($value) {
 		$this->element_type = $value;
@@ -194,7 +227,7 @@ abstract class AbstractJqueryElement {
 	 * @param string $widget_id
 	 * @return string
 	 */
-	function get_id($widget_id = null){
+	public function get_id($widget_id = null){
 		if (!is_null($widget_id)){
 			if (!$element = $this->get_template()->get_element_by_widget_id($widget_id, $this->get_page_id())){
 				throw new TemplateError('No element for widget id "' . $widget_id . '" found on page "' . $this->get_page_id() . '"!');	
@@ -213,7 +246,7 @@ abstract class AbstractJqueryElement {
 	 * @param string $id
 	 * @return string
 	 */
-	function clean_id($id){
+	public function clean_id($id){
 		return str_replace($this->get_template()->get_config()->get_option('FORBIDDEN_CHARS_IN_ELEMENT_ID'), '_', $id);
 	}
 	
@@ -234,7 +267,7 @@ abstract class AbstractJqueryElement {
 	 * @see build_js_value_getter()
 	 * @return string
 	 */
-	function build_js_value_getter_method(){
+	public function build_js_value_getter_method(){
 		return 'val()';
 	}
 	
@@ -246,7 +279,7 @@ abstract class AbstractJqueryElement {
 	 * @param string $value
 	 * @return string
 	 */
-	function build_js_value_setter($value){
+	public function build_js_value_setter($value){
 		return '$("#' . $this->get_id() . '").' . $this->build_js_value_setter_method($value);
 	}
 	
@@ -256,10 +289,14 @@ abstract class AbstractJqueryElement {
 	 * @see build_js_value_getter()
 	 * @return string
 	 */
-	function build_js_value_setter_method($value){
+	public function build_js_value_setter_method($value){
 		return 'val(' . $value . ')';
 	}
 	
+	/**
+	 * Returns a JS snippet, that refreshes the contents of this element
+	 * @return string
+	 */
 	public function build_js_refresh(){
 		return '';
 	}
@@ -298,6 +335,10 @@ abstract class AbstractJqueryElement {
 		return $height;
 	}
 	
+	/**
+	 * Returns the default relative height of this element
+	 * @return string
+	 */
 	public function get_height_default() {
 		if (is_null($this->height_default)){
 			$this->height_default = $this->get_template()->get_config()->get_option('HEIGHT_DEFAULT');
@@ -305,11 +346,20 @@ abstract class AbstractJqueryElement {
 		return $this->height_default;
 	}
 	
+	/**
+	 * Sets the default relative height of this element
+	 * @param string $value
+	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 */
 	public function set_height_default($value) {
 		$this->height_default = $value;
 		return $this;
 	}
 	
+	/**
+	 * Returns the default relative width of this element
+	 * @return string
+	 */
 	public function get_width_default() {
 		if (is_null($this->width_default)){
 			$this->width_default = $this->get_template()->get_config()->get_option('WIDTH_DEFAULT');
@@ -317,11 +367,20 @@ abstract class AbstractJqueryElement {
 		return $this->width_default;
 	}
 	
+	/**
+	 * Sets the default relative width of this element
+	 * @param string $value
+	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 */
 	public function set_width_default($value) {
 		$this->width_default = $value;
 		return $this;
 	}
 	
+	/**
+	 * Returns the width of one relative width unit in pixels
+	 * @return \exface\Core\CommonLogic\multitype
+	 */
 	public function get_width_relative_unit(){
 		if (is_null($this->width_relative_unit)){
 			$this->width_relative_unit = $this->get_template()->get_config()->get_option('WIDTH_RELATIVE_UNIT');
@@ -329,6 +388,10 @@ abstract class AbstractJqueryElement {
 		return $this->width_relative_unit;
 	}
 	
+	/**
+	 * Returns the height of one relative height unit in pixels
+	 * @return \exface\Core\CommonLogic\multitype
+	 */
 	public function get_height_relative_unit(){
 		if (is_null($this->height_relative_unit)){
 			$this->height_relative_unit = $this->get_template()->get_config()->get_option('HEIGHT_RELATIVE_UNIT');
@@ -369,29 +432,56 @@ JS;
 				return $js;
 	}
 	
+	/**
+	 * Adds a JavaScript snippet to the script, that will get executed every time the value of this element changes
+	 * @param string $string
+	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 */
 	public function add_on_change_script($string){
 		$this->on_change_script .= $string;
 		return $this;
 	}
 	
+	/**
+	 * Returns the JavaScript snippet, that should get executed every time the value of this element changes
+	 * @return string
+	 */
 	public function get_on_change_script(){
 		return $this->on_change_script;
 	}
 	
+	/**
+	 * Overwrites the JavaScript snippet, that will get executed every time the value of this element changes
+	 * @param string $string
+	 */
 	public function set_on_change_script($string){
 		$this->on_change_script = $string;
 		return $this;
 	}
 	
+	/**
+	 * Returns the JavaScript snippet, that should get executed every time the size of this element changes
+	 * @return string
+	 */
 	public function get_on_resize_script() {
 		return $this->on_resize_script;
 	}
 	
+	/**
+	 * Overwrites the JavaScript snippet, that will get executed every time the size of this element changes
+	 * @param string $value
+	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 */
 	public function set_on_resize_script($value) {
 		$this->on_resize_script = $value;
 		return $this;
 	}
 	
+	/**
+	 * Adds a JavaScript snippet to the script, that will get executed every time the size of this element changes
+	 * @param string $js
+	 * @return \exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement
+	 */
 	public function add_on_resize_script($js) {
 		$this->on_resize_script .= $js;
 		return $this;
@@ -431,6 +521,20 @@ JS;
 	 */
 	public function build_js_show_success_message($message_body_js, $title = null){
 		return '';
+	}
+	
+	/**
+	 * Returns a template specific CSS class for a given icon. In most templates this string will be used as a class for an <a> or <i> element.
+	 * @param string $icon_name
+	 * @return string
+	 */
+	public function build_css_icon_class($icon_name){
+		try {
+			$class = $this->get_template()->get_config()->get_option('ICON_CLASSES.' . strtoupper($exf_icon_name));
+			return $class;
+		} catch (ConfigurationNotFoundError $e) {
+			return $this->get_template()->get_config()->get_option('ICON_CLASSES.DEFAULT_CLASS_PREFIX') . $exf_icon_name;
+		}
 	}
 	
 }

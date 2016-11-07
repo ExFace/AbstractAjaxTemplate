@@ -10,7 +10,7 @@ trait JqueryButtonTrait {
 	}
 	
 	public function build_js_click_function_name(){
-		return $this->get_function_prefix() . 'click';
+		return $this->build_js_function_prefix() . 'click';
 	}
 	
 	/**

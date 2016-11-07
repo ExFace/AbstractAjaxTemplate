@@ -530,10 +530,10 @@ JS;
 	 */
 	public function build_css_icon_class($icon_name){
 		try {
-			$class = $this->get_template()->get_config()->get_option('ICON_CLASSES.' . strtoupper($exf_icon_name));
+			$class = $this->get_template()->get_config()->get_option('ICON_CLASSES.' . strtoupper($icon_name));
 			return $class;
 		} catch (ConfigurationNotFoundError $e) {
-			return $this->get_template()->get_config()->get_option('ICON_CLASSES.DEFAULT_CLASS_PREFIX') . $exf_icon_name;
+			return $this->get_template()->get_config()->get_option('ICON_CLASSES.DEFAULT_CLASS_PREFIX') . $icon_name;
 		}
 	}
 	

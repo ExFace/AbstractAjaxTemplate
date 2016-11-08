@@ -35,7 +35,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		$output = '';
 		
 		if (!$this->check_widget_implementation($widget->get_widget_type())){
-			throw new TemplateError('Widget "' . $widget->widget_type . '" not implemented!');
+			throw new TemplateError('Widget "' . $widget->get_widget_type() . '" not implemented!');
 			return '';
 		}
 		

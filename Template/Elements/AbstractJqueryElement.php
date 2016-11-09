@@ -251,10 +251,12 @@ abstract class AbstractJqueryElement {
 	}
 	
 	/**
-	 * Returns a JS snippet to get the current value of the widget: e.g. $('#id').val() for simple inputs. This snippet can be used
-	 * to build interaction scripts between widgets.
-	 * TODO add row and column to select a single value from the widgets data, which is generally
-	 * represented by a DataSheet
+	 * Returns an inline-embedable JS snippet to get the current value of the widget: e.g. $('#id').val() for simple inputs. 
+	 * This snippet can be used to build interaction scripts between widgets.
+	 * NOTE: the result does not end with a semicolon!
+	 * 
+	 * TODO add row and column to select a single value from the widgets data, which is generally represented by a DataSheet
+	 * 
 	 * @return string
 	 */
 	public function build_js_value_getter(){

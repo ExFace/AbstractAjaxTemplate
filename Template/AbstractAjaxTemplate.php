@@ -166,8 +166,10 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			/* @var $data_sheet \exface\Core\CommonLogic\DataSheets\DataSheet */
 			if ($widget){
 				$data_sheet = $widget->prepare_data_sheet_to_read();
-			} else {
+			} elseif ($object_id) {
 				$data_sheet = $this->get_workbench()->data()->create_data_sheet($this->get_workbench()->model()->get_object($object_id));
+			} else {
+				return null;
 			}
 			
 			// Set filters

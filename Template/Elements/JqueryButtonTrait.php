@@ -2,6 +2,7 @@
 
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Actions\GoBack;
+use exface\Core\Widgets\Button;
 
 trait JqueryButtonTrait {
 	

@@ -13,6 +13,8 @@ use exface\Core\CommonLogic\UxonObject;
 use exface\Core\CommonLogic\WidgetLink;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Factories\ActionFactory;
+use exface\Core\Interfaces\WidgetInterface;
+use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -80,8 +82,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * Elements are cached within the template engine, so multiple calls to this method do
 	 * not cause the element to get recreated from scratch. This improves performance.
 	 * 
-	 * @param \exface\Core\Widgets\AbstractWidget $widget
-	 * @return \exface\Templates\jeasyui\Widgets\jeasyuiAbstractWidget
+	 * @param WidgetInterface $widget
+	 * @return AbstractJqueryElement
 	 */
 	function get_element(\exface\Core\Widgets\AbstractWidget $widget){
 		if (!isset($this->elements[$widget->get_page_id()]) || !isset($this->elements[$widget->get_page_id()][$widget->get_id()])){
@@ -341,6 +343,9 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		$prefill_string = $this->get_workbench()->get_request_params()['prefill'];
 		if ($prefill_string && $prefill_uxon = UxonObject::from_anything($prefill_string)){
 			$exface = $this->get_workbench();
+			if (!$prefill_uxon->get_property('meta_object_id') && $prefill_uxon->get_property('oId')){
+				$prefill_uxon->set_property('meta_object_id', $prefill_uxon->get_property('oId'));
+			}
 			$prefill_data = DataSheetFactory::create_from_uxon($exface, $prefill_uxon);
 			$this->get_workbench()->remove_request_param('prefill');
 			

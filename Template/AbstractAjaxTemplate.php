@@ -341,7 +341,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		$prefill_string = $this->get_workbench()->get_request_params()['prefill'];
 		if ($prefill_string && $prefill_uxon = UxonObject::from_anything($prefill_string)){
 			$exface = $this->get_workbench();
-			$prefill_data = DataSheetFactory::create_from_stdClass($exface, $prefill_uxon);
+			$prefill_data = DataSheetFactory::create_from_uxon($exface, $prefill_uxon);
 			$this->get_workbench()->remove_request_param('prefill');
 			
 			if ($prefill_data){

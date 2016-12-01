@@ -6,8 +6,14 @@ use exface\Core\Widgets\Button;
 
 trait JqueryButtonTrait {
 	
-	protected function build_js_input_refresh($widget, $input_element){
-		return ($widget->get_refresh_input() && $input_element->build_js_refresh() ? $input_element->build_js_refresh() . ";" : "");
+	protected function build_js_input_refresh(Button $widget, $input_element){
+		$js = ($widget->get_refresh_input() && $input_element->build_js_refresh() ? $input_element->build_js_refresh() . ";" : "");
+		if ($link = $widget->get_refresh_widget_link()){
+			if($link->get_page_id() == $widget->get_page_id() && $linked_element = $this->get_template()->get_element($link->get_widget())){
+				$js .= "\n" . $linked_element->build_js_refresh();
+			}
+		}
+		return $js;
 	}
 	
 	public function build_js_click_function_name(){

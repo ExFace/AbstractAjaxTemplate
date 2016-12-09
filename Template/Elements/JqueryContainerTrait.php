@@ -51,7 +51,7 @@ trait JqueryContainerTrait {
 		$output_rows = '';
 		$found_inputs = false;
 		foreach ($widget->get_children_recursive() as $child){
-			if ($child->implements_interface('iTakeInput') && $child->get_meta_object()->is($action->get_meta_object())){				
+			if ($child->implements_interface('iTakeInput') && $child->get_meta_object()->is_exactly($action->get_meta_object())){				
 				// Collect data from all widgets that take regular input (all sorts of input fields, etc.). Make sure, only data directly related
 				// to the object the action is performed upon is collected
 				$output_rows .= 'data.rows[0]["' . $child->get_attribute_alias() . '"] = ' . $this->get_template()->get_element($child)->build_js_value_getter() . ";\n";

@@ -309,7 +309,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		try {
 			$output = $action->get_result_output();
 		} catch (exfError $e){
-			if (!$this->get_workbench()->get_confg()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
+			if (!$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				$error_msg = $e->getMessage();
 				$error_trace = $e->getTraceAsString();
 			} else {

@@ -304,12 +304,17 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	protected function set_response_from_action(ActionInterface $action){
 		
 		$error_msg = null;
+		$error_trace = null;
 		$warning_msg = null;
 		try {
 			$output = $action->get_result_output();
 		} catch (exfError $e){
-			$error_msg = $e->getMessage();
-			$error_trace = $e->getTraceAsString();
+			if (!$this->get_workbench()->get_confg()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
+				$error_msg = $e->getMessage();
+				$error_trace = $e->getTraceAsString();
+			} else {
+				throw $e;
+			}
 		} catch (exfWarning $w){
 			$warning_msg = $w->getMessage();
 		}

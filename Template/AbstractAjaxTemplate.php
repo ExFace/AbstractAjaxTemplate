@@ -319,23 +319,36 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$warning_msg = $w->getMessage();
 		}
 		
-		if (!$output && $action->get_result_message()){			
-			$response = array();
-			if ($error_msg || $warning_msg){
-				$response['error'] = $error_msg;
-				$response['warning'] = $warning_msg;
+		try {
+			$message = $action->get_result_message();
+		} catch (exfError $e){
+			if (!$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
+				$error_msg = $e->getMessage();
+				$error_trace = $e->getTraceAsString();
 			} else {
-				$response['success'] = $action->get_result_message();
-				if ($action->is_undoable()){
-					$response['undoable'] = '1';
-				}
+				throw $e;
 			}
+		} catch (exfWarning $w){
+			$warning_msg = $w->getMessage();
+		}
+		
+		if ($error_msg || $warning_msg){
+			$response = array();
+			$response['error'] = $error_msg."\n".$error_trace;
+			$response['warning'] = $warning_msg;
 			// Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
 			// there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)
 			$output = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
+		} else if (!$output && $message){
+			$response = array();
+			$response['success'] = $message;
+			if ($action->is_undoable()){
+				$response['undoable'] = '1';
+			}
+			$output = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
 		}
 		
-		$this->set_response($error_msg ? $error_msg . "\n" . $error_trace : $output);
+		$this->set_response($output);
 	} 
 	
 	/**

@@ -7,14 +7,14 @@ use exface\Core\Widgets\Data;
 use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
-use exface\Core\Exceptions\exfError;
-use exface\Core\Exceptions\exfWarning;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\CommonLogic\WidgetLink;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\Factories\ActionFactory;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
+use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
+use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -148,7 +148,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			// Add filters for quick search
 			if ($widget && $quick_search = $this->get_request_quick_search_value()){
 				$quick_search_filter = $widget->get_meta_object()->get_label_alias();
-				if ($widget->is_of_type('Data') && count($widget->get_attributes_for_quick_search()) > 0){
+				if ($widget->is('Data') && count($widget->get_attributes_for_quick_search()) > 0){
 					foreach ($widget->get_attributes_for_quick_search() as $attr){
 						$quick_search_filter .= ($quick_search_filter ? ',' : '') . $attr;
 					}
@@ -308,14 +308,20 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		$warning_msg = null;
 		try {
 			$output = $action->get_result_output();
-		} catch (exfError $e){
+		} catch (ErrorExceptionInterface $e){
 			if (!$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
-				$error_msg = $e->getMessage();
-				$error_trace = $e->getTraceAsString();
+				try {
+					$output = $this->draw($e->create_widget($action->get_called_on_ui_page()));
+					header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+				} catch (\Throwable $error_widget_exception){
+					// If anything goes wrong when trying to prettify the original error, drop prettifying
+					// and just throw the original
+					throw $e;
+				}
 			} else {
 				throw $e;
 			}
-		} catch (exfWarning $w){
+		} catch (WarningExceptionInterface $w){
 			$warning_msg = $w->getMessage();
 		}
 		

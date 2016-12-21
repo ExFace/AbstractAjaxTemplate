@@ -87,18 +87,37 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 */
 	function get_element(\exface\Core\Widgets\AbstractWidget $widget){
 		if (!isset($this->elements[$widget->get_page_id()]) || !isset($this->elements[$widget->get_page_id()][$widget->get_id()])){
-			$elem_class = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix() . $widget->get_widget_type();
-			// if the required widget is not found, create an abstract widget instead
-			if (!class_exists($elem_class)){
-				// TODO throw exception or issue some kind of warning
-				$elem_class = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix() . 'BasicElement';
-			}
-			
+			$elem_class = $this->get_class($widget);
 			$instance = new $elem_class($widget, $this);
 			$this->elements[$widget->get_page_id()][$widget->get_id()] = $instance;
 		}
 		
 		return $this->elements[$widget->get_page_id()][$widget->get_id()];
+	}
+	
+	protected function get_class(WidgetInterface $widget){
+		$elem_class_prefix = $this->get_class_namespace() .  '\\Elements\\' . $this->get_class_prefix();
+		$elem_class = $elem_class_prefix . $widget->get_widget_type();
+		if (!class_exists($elem_class)){
+			$widget_class = get_parent_class($widget);
+			$elem_class = $elem_class_prefix . AbstractWidget::get_widget_type_from_class($widget_class);
+			while (!class_exists($elem_class)){
+				if ($widget_class = get_parent_class($widget_class)){
+					$elem_class = $elem_class_prefix . AbstractWidget::get_widget_type_from_class($widget_class);
+				}
+			}
+			
+			if ($elem_class){
+				$reflection = new \ReflectionClass($elem_class);
+				if ($reflection->isAbstract()){
+					$elem_class = $elem_class_prefix . 'BasicElement';
+				}
+			} else {
+				$elem_class = $elem_class_prefix . 'BasicElement';
+			}
+		}
+		// if the required widget is not found, create an abstract widget instead
+		return $elem_class;
 	}
 	
 	/**
@@ -316,6 +335,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				} catch (\Throwable $error_widget_exception){
 					// If anything goes wrong when trying to prettify the original error, drop prettifying
 					// and just throw the original
+					//throw $error_widget_exception;
 					throw $e;
 				}
 			} else {

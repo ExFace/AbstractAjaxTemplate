@@ -104,10 +104,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			while (!class_exists($elem_class)){
 				if ($widget_class = get_parent_class($widget_class)){
 					$elem_class = $elem_class_prefix . AbstractWidget::get_widget_type_from_class($widget_class);
+				} else {
+					break;
 				}
 			}
 			
-			if ($elem_class){
+			if (class_exists($elem_class)){
 				$reflection = new \ReflectionClass($elem_class);
 				if ($reflection->isAbstract()){
 					$elem_class = $elem_class_prefix . 'BasicElement';

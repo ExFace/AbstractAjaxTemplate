@@ -15,6 +15,7 @@ use exface\Core\Interfaces\WidgetInterface;
 use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -332,12 +333,17 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		} catch (ErrorExceptionInterface $e){
 			if (!$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				try {
-					$output = $this->draw($e->create_widget($action->get_called_on_ui_page()));
+					$debug_widget = $e->create_widget($action->get_called_on_ui_page());
+					$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
 					header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+					//throw $e;
 				} catch (\Throwable $error_widget_exception){
 					// If anything goes wrong when trying to prettify the original error, drop prettifying
 					// and just throw the original
-					//throw $error_widget_exception;
+					throw $e;
+				} catch (FatalThrowableError $error_widget_exception){
+					// If anything goes wrong when trying to prettify the original error, drop prettifying
+					// and just throw the original
 					throw $e;
 				}
 			} else {

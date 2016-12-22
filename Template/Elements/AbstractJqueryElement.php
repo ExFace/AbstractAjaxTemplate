@@ -5,7 +5,7 @@ use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
 use exface\Core\Exceptions\TemplateError;
-use exface\Core\Exceptions\ConfigurationNotFoundError;
+use exface\Core\Exceptions\Configuration\ConfigOptionNotFoundError;
 use exface\Core\CommonLogic\Model\Object;
 
 abstract class AbstractJqueryElement {
@@ -534,7 +534,7 @@ JS;
 		try {
 			$class = $this->get_template()->get_config()->get_option('ICON_CLASSES.' . strtoupper($icon_name));
 			return $class;
-		} catch (ConfigurationNotFoundError $e) {
+		} catch (ConfigOptionNotFoundError $e) {
 			return $this->get_template()->get_config()->get_option('ICON_CLASSES.DEFAULT_CLASS_PREFIX') . $icon_name;
 		}
 	}

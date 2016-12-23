@@ -224,17 +224,9 @@ abstract class AbstractJqueryElement {
 	 * Returns the id of the HTML-element representing the widget. Passing a widget id makes the method return the id of the element
 	 * that belongs to that widget.
 	 * 
-	 * @param string $widget_id
 	 * @return string
 	 */
-	public function get_id($widget_id = null){
-		if (!is_null($widget_id)){
-			if (!$element = $this->get_template()->get_element_by_widget_id($widget_id, $this->get_page_id())){
-				throw new TemplateError('No element for widget id "' . $widget_id . '" found on page "' . $this->get_page_id() . '"!');	
-				return '';
-			}
-			return $element->get_id();
-		}
+	public function get_id(){
 		if (is_null($this->id)){
 			$this->id = $this->clean_id($this->get_widget()->get_id()) . ($this->get_template()->get_workbench()->get_request_id() ? '-' . $this->get_template()->get_workbench()->get_request_id() : '');
 		}

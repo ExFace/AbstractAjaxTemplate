@@ -1,7 +1,6 @@
 <?php namespace exface\AbstractAjaxTemplate\Template;
 
 use exface\Core\CommonLogic\AbstractTemplate;
-use exface\Core\Exceptions\TemplateError;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Widgets\Data;
 use exface\Core\Widgets\AbstractWidget;
@@ -16,6 +15,7 @@ use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
+use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -36,11 +36,6 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	
 	function draw(\exface\Core\Widgets\AbstractWidget $widget){
 		$output = '';
-		
-		if (!$this->check_widget_implementation($widget->get_widget_type())){
-			throw new TemplateError('Widget "' . $widget->get_widget_type() . '" not implemented!');
-			return '';
-		}
 		
 		$output .= $this->generate_html($widget);
 		$js = $this->generate_js($widget);
@@ -132,7 +127,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * @param string $page_id
 	 * @return \exface\Templates\jeasyui\Widgets\jeasyuiAbstractWidget
 	 */
-	function get_element_by_widget_id($widget_id, $page_id){
+	public function get_element_by_widget_id($widget_id, $page_id){
 		if ($elem = $this->elements[$page_id][$widget_id]){
 			return $elem;
 		} else {
@@ -145,18 +140,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		}
 	}
 	
-	function get_element_from_widget_link(WidgetLink $link){
+	public function get_element_from_widget_link(WidgetLink $link){
 		return $this->get_element_by_widget_id($link->get_widget_id(), $link->get_page_id());
-	}
-	
-	function check_widget_implementation($widget_type){
-		// FIXME change to some sort of check for existing class like in the draw() method
-		/*if (method_exists($this, 'draw_' . $widget_type)){
-			return true;
-		} else {
-			return false;
-		}*/
-		return true;
 	}
 	
 	public function create_link_internal($page_id, $url_params=''){
@@ -178,7 +163,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				if ($quick_search_filter){
 					$filters[$quick_search_filter][] = $quick_search;
 				} else {
-					throw new TemplateError('Cannot perform quick search on object "' . $widget->get_meta_object()->get_alias_with_namespace() . '": either mark one of the attributes as a label in the model or set inlude_in_quick_search = true for one of the filters in the widget definition!');
+					throw new TemplateRequestParsingError('Cannot perform quick search on object "' . $widget->get_meta_object()->get_alias_with_namespace() . '": either mark one of the attributes as a label in the model or set inlude_in_quick_search = true for one of the filters in the widget definition!', '6T6HSL4');
 				}
 			}
 		
@@ -302,7 +287,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		}
 	
 		if (!$action){
-			throw new TemplateError('Cannot perform action!');
+			throw new TemplateRequestParsingError('Action not specified in request!', '6T6HSAO');
 		}
 		
 		// Read the input data from the request

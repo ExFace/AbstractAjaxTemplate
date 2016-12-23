@@ -4,7 +4,6 @@ use exface\Core\Interfaces\TemplateInterface;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
-use exface\Core\Exceptions\TemplateError;
 use exface\Core\Exceptions\Configuration\ConfigOptionNotFoundError;
 use exface\Core\CommonLogic\Model\Object;
 

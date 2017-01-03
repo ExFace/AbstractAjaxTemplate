@@ -493,14 +493,14 @@ JS;
 	abstract public function build_js_busy_icon_hide();
 	
 	/**
-	 * Returns a JS snippet showing an error notification. The body of the message may be any JavaScript or quoted text (quotes will not be
+	 * Returns a JS snippet showing an error notification. Body and title may be any JavaScript or quoted text (quotes will not be
 	 * added automatically!!!).
 	 *
 	 * @param string $message_body_js
-	 * @param string $title
+	 * @param string $title_js
 	 * @return string
 	 */
-	public function build_js_show_error_message($message_body_js, $title = null){
+	public function build_js_show_error_message($message_body_js, $title_js = null){
 		return "alert(" . $message_body_js . ");";
 	}
 	

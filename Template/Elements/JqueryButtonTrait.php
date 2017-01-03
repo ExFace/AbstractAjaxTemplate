@@ -119,20 +119,22 @@ trait JqueryButtonTrait {
 		$output = $this->build_js_request_data_collector($action, $input_element);
 		$output .= "
 						" . $this->build_js_busy_icon_show() . "
-						$.post('" . $this->get_ajax_url() ."',
-							{	
+						$.ajax({
+							type: 'POST',
+							url: '" . $this->get_ajax_url() ."',
+							data: {	
 								action: '".$widget->get_action_alias()."',
 								resource: '" . $widget->get_page_id() . "',
 								element: '" . $widget->get_id() . "',
 								object: '" . $widget->get_meta_object_id() . "',
 								data: requestData
 							},
-							function(result) {
+							success: function(data, textStatus, jqXHR) {
 								var response = {};
 								try {
-									response = $.parseJSON(result);
+									response = $.parseJSON(data);
 								} catch (e) {
-									response.error = result;
+									response.error = data;
 								}
 			                   	if (response.success){
 									" . $this->build_js_close_dialog($widget, $input_element) . "
@@ -143,10 +145,15 @@ trait JqueryButtonTrait {
 									}
 			                    } else {
 									" . $this->build_js_busy_icon_hide() . "
-									" . $this->build_js_show_error_message('response.error', 'Server error') . "
+									" . $this->build_js_show_error_message('response.error', '"Server error"') . "
 			                    }
+							},
+							error: function(jqXHR, textStatus, errorThrown){ 
+								" . $this->build_js_show_error_message('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . " 
+								" . $this->build_js_busy_icon_hide() . "
 							}
-						);";
+						});
+					";
 		
 		return $output;
 		
@@ -171,7 +178,7 @@ trait JqueryButtonTrait {
 					        error: function(jqXHR, textStatus, errorThrown)
 					        {
 					            " . $input_element->build_js_busy_icon_hide() . "
-			            		" . $this->build_js_show_error_message('jqXHR.responseText', 'Server error') . "
+			            		" . $this->build_js_show_error_message('jqXHR.responseText', '"Server error"') . "
 					        }
 						});";*/
 	}

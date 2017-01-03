@@ -16,6 +16,7 @@ use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
+use exface\Core\Widgets\ErrorMessage;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -34,11 +35,20 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	protected $request_prefill_data = NULL;
 	protected $request_system_vars = array();
 	
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * @see \exface\Core\CommonLogic\AbstractTemplate::draw()
+	 */
 	function draw(\exface\Core\Widgets\AbstractWidget $widget){
 		$output = '';
-		
-		$output .= $this->generate_html($widget);
-		$js = $this->generate_js($widget);
+		try {
+			$output .= $this->generate_html($widget);
+			$js = $this->generate_js($widget);
+		} catch (ErrorExceptionInterface $e){
+			$output .= $this->generate_html($e->create_widget($widget->get_page()));
+			$js .= $this->generate_js($e->create_widget($widget->get_page()));
+		}
 		if ($js){
 			$output .= "\n" . '<script type="text/javascript">' . $js . '</script>';
 		}
@@ -319,9 +329,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			if (!$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				try {
 					$debug_widget = $e->create_widget($action->get_called_on_ui_page());
-					$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
-					header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-					//throw $e;
+					$this->set_response_from_error($debug_widget, $e->get_status_code());
+					return;
 				} catch (\Throwable $error_widget_exception){
 					// If anything goes wrong when trying to prettify the original error, drop prettifying
 					// and just throw the original
@@ -355,7 +364,19 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		}
 		
 		$this->set_response($error_msg ? $error_msg . "\n" . $error_trace : $output);
+		return $this;
 	} 
+	
+	protected function set_response_from_error(ErrorMessage $debug_widget, $http_status_code = 500){
+		$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
+		if (is_numeric($http_status_code)){
+			http_response_code($http_status_code);
+		} else {
+			http_response_code(500);
+		}
+		$this->set_response($output);
+		return $this;
+	}
 	
 	/**
 	 * Returns the prefill data from the request or FALSE if no prefill data was sent
@@ -381,6 +402,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 					$prefill_data->add_filter_in_from_string($prefill_data->get_meta_object()->get_uid_alias(), $prefill_data->get_column_values($prefill_data->get_meta_object()->get_uid_alias()));
 					$prefill_data->data_read();
 				}
+				
 				$this->request_prefill_data = $prefill_data;
 			} else {
 				$this->request_prefill_data = false;

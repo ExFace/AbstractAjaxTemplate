@@ -326,7 +326,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		try {
 			$output = $action->get_result_output();
 		} catch (ErrorExceptionInterface $e){
-			if (!$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
+			if (!$this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				try {
 					$debug_widget = $e->create_widget($action->get_called_on_ui_page());
 					$this->set_response_from_error($debug_widget, $e->get_status_code());

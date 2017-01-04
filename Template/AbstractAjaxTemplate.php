@@ -17,6 +17,8 @@ use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Widgets\ErrorMessage;
+use exface\Core\Interfaces\UiPageInterface;
+use exface\Core\Factories\UiPageFactory;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -274,47 +276,55 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		foreach($this->get_request_system_vars() as $var){
 			$this->get_workbench()->remove_request_param($var);
 		}
+		
+		// Do the actual processing
+		try {
+			if ($called_in_resource_id && $called_by_widget_id){
+				$widget = $this->get_workbench()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
+				if (!$object_id) $object_id = $widget->get_meta_object()->get_id();
+				if ($widget instanceof iTriggerAction && (!$action_alias || strtolower($action_alias) == strtolower($widget->get_action()->get_alias_with_namespace()))){
+					$action = $widget->get_action();
+				}
+			}
+			
+			if (!$action){
+				$exface = $this->get_workbench();
+				$action = ActionFactory::create_from_string($exface, $action_alias, ($widget ? $widget : null));
+			}
+			
+			// Give 
+			$action->set_template_alias($this->get_alias_with_namespace());
+			
+			// See if the widget needs to be prefilled
+			if ($action->implements_interface('iUsePrefillData') && $prefill_data = $this->get_request_prefill_data($widget)){
+				$action->set_prefill_data_sheet($prefill_data);
+			}
+		
+			if (!$action){
+				throw new TemplateRequestParsingError('Action not specified in request!', '6T6HSAO');
+			}
+			
+			// Read the input data from the request
+			$data_sheet = $this->get_data_sheet_from_request($object_id, $widget);
+			if ($data_sheet){
+				if ($action->get_input_data_sheet()){
+					$action->get_input_data_sheet()->import_rows($data_sheet);
+				} else {
+					$action->set_input_data_sheet($data_sheet);
+				}
+			}
+			// Check, if the action has a widget. If not, give it the widget from the request
+			if ($action->implements_interface('iShowWidget') && !$action->get_widget() && $widget){
+				$action->set_widget($widget);
+			}
+			
+			$this->set_response_from_action($action);
+			
+		} catch (ErrorExceptionInterface $e){
+			$ui = $this->get_workbench()->ui();
+			$this->set_response_from_error($e, UiPageFactory::create($ui, 0));
+		}
 
-		if ($called_in_resource_id && $called_by_widget_id){
-			$widget = $this->get_workbench()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
-			if (!$object_id) $object_id = $widget->get_meta_object()->get_id();
-			if ($widget instanceof iTriggerAction && (!$action_alias || strtolower($action_alias) == strtolower($widget->get_action()->get_alias_with_namespace()))){
-				$action = $widget->get_action();
-			}
-		}
-		
-		if (!$action){
-			$exface = $this->get_workbench();
-			$action = ActionFactory::create_from_string($exface, $action_alias, ($widget ? $widget : null));
-		}
-		
-		// Give 
-		$action->set_template_alias($this->get_alias_with_namespace());
-		
-		// See if the widget needs to be prefilled
-		if ($action->implements_interface('iUsePrefillData') && $prefill_data = $this->get_request_prefill_data($widget)){
-			$action->set_prefill_data_sheet($prefill_data);
-		}
-	
-		if (!$action){
-			throw new TemplateRequestParsingError('Action not specified in request!', '6T6HSAO');
-		}
-		
-		// Read the input data from the request
-		$data_sheet = $this->get_data_sheet_from_request($object_id, $widget);
-		if ($data_sheet){
-			if ($action->get_input_data_sheet()){
-				$action->get_input_data_sheet()->import_rows($data_sheet);
-			} else {
-				$action->set_input_data_sheet($data_sheet);
-			}
-		}
-		// Check, if the action has a widget. If not, give it the widget from the request
-		if ($action->implements_interface('iShowWidget') && !$action->get_widget() && $widget){
-			$action->set_widget($widget);
-		}
-	
-		$this->set_response_from_action($action);
 		return $this->get_response();
 	}
 	
@@ -328,8 +338,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		} catch (ErrorExceptionInterface $e){
 			if (!$this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				try {
-					$debug_widget = $e->create_widget($action->get_called_on_ui_page());
-					$this->set_response_from_error($debug_widget, $e->get_status_code());
+					$this->set_response_from_error($e, $action->get_called_on_ui_page());
 					return;
 				} catch (\Throwable $error_widget_exception){
 					// If anything goes wrong when trying to prettify the original error, drop prettifying
@@ -367,7 +376,9 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		return $this;
 	} 
 	
-	protected function set_response_from_error(ErrorMessage $debug_widget, $http_status_code = 500){
+	protected function set_response_from_error(ErrorExceptionInterface $exception, UiPageInterface $page){
+		$debug_widget = $exception->create_widget($page);
+		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
 		$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
 		if (is_numeric($http_status_code)){
 			http_response_code($http_status_code);

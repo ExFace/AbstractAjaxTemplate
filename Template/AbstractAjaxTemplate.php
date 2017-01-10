@@ -178,7 +178,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				$quick_search_filter = $widget->get_meta_object()->get_label_alias();
 				if ($widget->is('Data') && count($widget->get_attributes_for_quick_search()) > 0){
 					foreach ($widget->get_attributes_for_quick_search() as $attr){
-						$quick_search_filter .= ($quick_search_filter ? ',' : '') . $attr;
+						$quick_search_filter .= ($quick_search_filter ? EXF_LIST_SEPARATOR : '') . $attr;
 					}
 				}
 				if ($quick_search_filter){
@@ -213,8 +213,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$sort_by = $this->get_request_sorting_sort_by();
 			$order = $this->get_request_sorting_direction();
 			if ($sort_by && $order){
-				$sort_by = explode(',', $sort_by);
-				$order = explode(',', $order);
+				$sort_by = explode(EXF_LIST_SEPARATOR, $sort_by);
+				$order = explode(EXF_LIST_SEPARATOR, $order);
 				foreach ($sort_by as $nr => $sort){
 					$data_sheet->get_sorters()->add_from_string($sort, $order[$nr]);
 				}
@@ -268,7 +268,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	}
 	
 	protected function split_concatennated_uid_value($string){
-		return explode(',', $string);
+		return explode(EXF_LIST_SEPARATOR, $string);
 	}
 	
 	/**

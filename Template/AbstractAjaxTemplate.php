@@ -81,8 +81,17 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * @return string
 	 */
 	public function draw_headers(\exface\Core\Widgets\AbstractWidget $widget){
-		$instance = $this->get_element($widget, $widget->get_page_id());
-		return implode("\n", array_unique($instance->generate_headers()));
+		try {
+			$instance = $this->get_element($widget);
+			$result = implode("\n", array_unique($instance->generate_headers()));
+		} catch (ErrorExceptionInterface $e){
+			// TODO Is there a way to display errors in the header nicely?
+			/*$ui = $this->get_workbench()->ui();
+			$page = UiPageFactory::create($ui, 0);
+			return $this->get_workbench()->get_debugger()->print_exception($e, false);*/
+			throw $e;
+		}
+		return $result;
 	}
 	
 	/**
@@ -262,7 +271,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		return explode(',', $string);
 	}
 	
-	public function process_request($page_id=NULL, $widget_id=NULL, $action_alias=NULL){
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * @see \exface\Core\CommonLogic\AbstractTemplate::process_request()
+	 */
+	public function process_request($page_id=NULL, $widget_id=NULL, $action_alias=NULL, $disable_error_handling=false){
 		// Look for basic request parameters
 		$called_in_resource_id = $page_id ? $page_id : $this->get_request_page_id();
 		$called_by_widget_id = $widget_id ? $widget_id : $this->get_request_widget_id();
@@ -321,8 +335,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$this->set_response_from_action($action);
 			
 		} catch (ErrorExceptionInterface $e){
-			$ui = $this->get_workbench()->ui();
-			$this->set_response_from_error($e, UiPageFactory::create($ui, 0));
+			if (!$disable_error_handling){
+				$ui = $this->get_workbench()->ui();
+				$this->set_response_from_error($e, UiPageFactory::create($ui, 0));
+			} else {
+				throw $e;
+			}
 		}
 
 		return $this->get_response();

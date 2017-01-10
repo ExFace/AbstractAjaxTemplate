@@ -427,7 +427,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				// Add columns to be prefilled to the data sheet from the request
 				$prefill_data = $widget_to_prefill->prepare_data_sheet_to_prefill($prefill_data);
 				// If new colums are added, the sheet is marked as outdated, so we need to fetch the data from the data source
-				if (!$prefill_data->is_up_to_date()){
+				if (!$prefill_data->is_fresh()){
 					$prefill_data->add_filter_in_from_string($prefill_data->get_meta_object()->get_uid_alias(), $prefill_data->get_column_values($prefill_data->get_meta_object()->get_uid_alias()));
 					$prefill_data->data_read();
 				}

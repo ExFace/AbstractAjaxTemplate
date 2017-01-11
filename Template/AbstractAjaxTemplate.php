@@ -103,7 +103,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 * @return AbstractJqueryElement
 	 */
 	function get_element(\exface\Core\Widgets\AbstractWidget $widget){
-		if (!isset($this->elements[$widget->get_page_id()]) || !isset($this->elements[$widget->get_page_id()][$widget->get_id()])){
+		if (!array_key_exists($widget->get_page_id(), $this->elements) || !array_key_exists($widget->get_id(), $this->elements[$widget->get_page_id()])){
 			$elem_class = $this->get_class($widget);
 			$instance = new $elem_class($widget, $this);
 			$this->elements[$widget->get_page_id()][$widget->get_id()] = $instance;
@@ -347,7 +347,6 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	}
 	
 	protected function set_response_from_action(ActionInterface $action){
-		
 		$error_msg = null;
 		$error_trace = null;
 		$warning_msg = null;

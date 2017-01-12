@@ -402,6 +402,7 @@ abstract class AbstractJqueryElement {
 	 * data sheets - thus, the data is alwas bound to a meta object.
 	 *
 	 * @param ActionInterface $action
+	 * @param string $custom_body_js
 	 * @return string
 	 */
 	public function build_js_data_getter(ActionInterface $action = null, $custom_body_js = null){

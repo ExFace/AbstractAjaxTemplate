@@ -16,7 +16,6 @@ use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
-use exface\Core\Widgets\ErrorMessage;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 
@@ -293,8 +292,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		
 		// Do the actual processing
 		try {
-			if ($called_in_resource_id && $called_by_widget_id){
-				$widget = $this->get_workbench()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
+			if ($called_in_resource_id){
+				if ($called_by_widget_id){
+					$widget = $this->get_workbench()->ui()->get_widget($called_by_widget_id, $called_in_resource_id);
+				} else {
+					$widget = $this->get_workbench()->ui()->get_page($called_in_resource_id)->get_widget_root();
+				}
 				if (!$object_id) $object_id = $widget->get_meta_object()->get_id();
 				if ($widget instanceof iTriggerAction && (!$action_alias || strtolower($action_alias) == strtolower($widget->get_action()->get_alias_with_namespace()))){
 					$action = $widget->get_action();

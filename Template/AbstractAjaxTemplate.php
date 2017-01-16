@@ -18,6 +18,7 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
+use exface\Core\Exceptions\RuntimeException;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -350,10 +351,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	}
 	
 	protected function set_response_from_action(ActionInterface $action){
-		$error_msg = null;
-		$error_trace = null;
-		$warning_msg = null;
-		try {
+		$output = $action->get_result_output();
+		/*try {
 			$output = $action->get_result_output();
 		} catch (ErrorExceptionInterface $e){
 			if (!$this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
@@ -374,30 +373,36 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			}
 		} catch (WarningExceptionInterface $w){
 			$warning_msg = $w->getMessage();
-		}
+		}*/
 		
 		if (!$output && $action->get_result_message()){			
 			$response = array();
-			if ($error_msg || $warning_msg){
-				$response['error'] = $error_msg;
-				$response['warning'] = $warning_msg;
-			} else {
-				$response['success'] = $action->get_result_message();
-				if ($action->is_undoable()){
-					$response['undoable'] = '1';
-				}
+			$response['success'] = $action->get_result_message();
+			if ($action->is_undoable()){
+				$response['undoable'] = '1';
 			}
+			
 			// Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
 			// there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)
 			$output = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
 		}
 		
-		$this->set_response($error_msg ? $error_msg . "\n" . $error_trace : $output);
+		$this->set_response($output);
 		return $this;
 	} 
 	
 	protected function set_response_from_error(ErrorExceptionInterface $exception, UiPageInterface $page){
-		$debug_widget = $exception->create_widget($page);
+		try {
+			$debug_widget = $exception->create_widget($page);
+		} catch (\Throwable $e){
+			// If anything goes wrong when trying to prettify the original error, drop prettifying
+			// and throw the original exception wrapped in a notice about the failed prettification
+			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessag() . '"! See orignal error detail below.', null, $exception);
+		} catch (FatalThrowableError $e){
+			// If anything goes wrong when trying to prettify the original error, drop prettifying
+			// and throw the original exception wrapped in a notice about the failed prettification
+			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessag() . '"! See orignal error detail below.', null, $exception);
+		}
 		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
 		$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
 		if (is_numeric($http_status_code)){

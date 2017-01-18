@@ -351,30 +351,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	}
 	
 	protected function set_response_from_action(ActionInterface $action){
-		$output = $action->get_result_output();
-		/*try {
-			$output = $action->get_result_output();
-		} catch (ErrorExceptionInterface $e){
-			if (!$this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
-				try {
-					$this->set_response_from_error($e, $action->get_called_on_ui_page());
-					return;
-				} catch (\Throwable $error_widget_exception){
-					// If anything goes wrong when trying to prettify the original error, drop prettifying
-					// and just throw the original
-					throw $e;
-				} catch (FatalThrowableError $error_widget_exception){
-					// If anything goes wrong when trying to prettify the original error, drop prettifying
-					// and just throw the original
-					throw $e;
-				}
-			} else {
-				throw $e;
-			}
-		} catch (WarningExceptionInterface $w){
-			$warning_msg = $w->getMessage();
-		}*/
-		
+		$output = $action->get_result_output();		
 		if (!$output && $action->get_result_message()){			
 			$response = array();
 			$response['success'] = $action->get_result_message();

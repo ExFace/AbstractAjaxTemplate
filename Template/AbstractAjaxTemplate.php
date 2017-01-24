@@ -171,6 +171,26 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 
 	public function get_data_sheet_from_request($object_id = NULL, $widget = NULL) {
 		if (!$this->request_data_sheet){
+			// Look for actual data rows in the request
+			if ($this->get_workbench()->get_request_params()['data']){
+				if (!is_array($this->get_workbench()->get_request_params()['data'])){
+					if ($decoded = @json_decode($this->get_workbench()->get_request_params()['data'], true));
+					$this->get_workbench()->set_request_param('data', $decoded);
+				}
+				$request_data = $this->get_workbench()->get_request_params()['data'];
+				if (is_array($request_data) && $request_data['oId']){
+					$data_sheet = DataSheetFactory::create_from_object_id_or_alias($this->get_workbench(), $request_data['oId']);
+					if (is_array($request_data['rows'])){
+						$rows = $request_data['rows'];
+						// If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
+						if (count($rows) == 1){
+							$rows = $this->split_rows_by_multivalue_fields($rows);
+						}
+						$data_sheet->add_rows($rows);
+					}
+				}
+			}
+			
 			// Look for filter data
 			$filters = $this->get_request_filters();
 			// Add filters for quick search
@@ -194,12 +214,14 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			}
 			
 			/* @var $data_sheet \exface\Core\CommonLogic\DataSheets\DataSheet */
-			if ($widget){
-				$data_sheet = $widget->prepare_data_sheet_to_read();
-			} elseif ($object_id) {
-				$data_sheet = $this->get_workbench()->data()->create_data_sheet($this->get_workbench()->model()->get_object($object_id));
-			} else {
-				return null;
+			if (!$data_sheet){
+				if ($widget){
+					$data_sheet = $widget->prepare_data_sheet_to_read();
+				} elseif ($object_id) {
+					$data_sheet = $this->get_workbench()->data()->create_data_sheet($this->get_workbench()->model()->get_object($object_id));
+				} else {
+					return null;
+				}
 			}
 			
 			// Set filters
@@ -224,23 +246,6 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$data_sheet->set_row_offset($this->get_request_paging_offset());
 			$data_sheet->set_rows_on_page($this->get_request_paging_rows());
 		
-			// Look for actual data rows in the request
-			if ($object_id){
-				if ($this->get_workbench()->get_request_params()['data'] && !is_array($this->get_workbench()->get_request_params()['data'])){
-					if ($decoded = @json_decode($this->get_workbench()->get_request_params()['data'], true));
-					$this->get_workbench()->set_request_param('data', $decoded);
-				}
-				if (is_array($this->get_workbench()->get_request_params()['data'])){
-					if (is_array($this->get_workbench()->get_request_params()['data']['rows'])){
-						$rows = $this->get_workbench()->get_request_params()['data']['rows'];
-						// If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
-						if (count($rows) == 1){
-							$rows = $this->split_rows_by_multivalue_fields($rows);
-						}
-						$data_sheet->add_rows($rows);
-					}
-				} 
-			}
 			$this->request_data_sheet = $data_sheet;
 		}
 		

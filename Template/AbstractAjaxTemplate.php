@@ -13,7 +13,6 @@ use exface\Core\Factories\ActionFactory;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
-use exface\Core\Interfaces\Exceptions\WarningExceptionInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Interfaces\UiPageInterface;
@@ -48,6 +47,9 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$output .= $this->generate_html($widget);
 			$js = $this->generate_js($widget);
 		} catch (ErrorExceptionInterface $e){
+			if ($this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
+				throw $e;
+			}
 			$output .= $this->generate_html($e->create_widget($widget->get_page()));
 			$js .= $this->generate_js($e->create_widget($widget->get_page()));
 		}
@@ -344,7 +346,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$this->set_response_from_action($action);
 			
 		} catch (ErrorExceptionInterface $e){
-			if (!$disable_error_handling){
+			if (!$disable_error_handling && !$this->get_workbench()->get_config()->get_option('DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				$ui = $this->get_workbench()->ui();
 				$this->set_response_from_error($e, UiPageFactory::create($ui, 0));
 			} else {

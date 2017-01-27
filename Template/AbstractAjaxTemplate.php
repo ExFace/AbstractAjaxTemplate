@@ -18,6 +18,7 @@ use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
+use exface\Core\Exceptions\UiPageNotFoundError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -292,6 +293,14 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		$object_id = $this->get_request_object_id();
 		if ($this->get_request_id()) $this->get_workbench()->set_request_id($this->get_request_id());
 		
+		if ($called_in_resource_id){
+			try {
+				$this->get_workbench()->ui()->get_page_current();
+			} catch (UiPageNotFoundError $e) {
+				$this->get_workbench()->ui()->set_page_id_current($called_in_resource_id);
+			}
+		}
+		
 		// Remove system variables from the request. These are ones a tempalte always adds to the request for it's own needs.
 		// They should be defined in the init() method of the template
 		foreach($this->get_request_system_vars() as $var){
@@ -321,8 +330,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			$action->set_template_alias($this->get_alias_with_namespace());
 			
 			// See if the widget needs to be prefilled
-			if ($action->implements_interface('iUsePrefillData') && $prefill_data = $this->get_request_prefill_data($widget)){
-				$action->set_prefill_data_sheet($prefill_data);
+			if ($action->implements_interface('iUsePrefillData')){
+				if (!$widget && $action->implements_interface('iShowWidget')){
+					$widget = $action->get_widget();
+				}
+				if ($widget && $prefill_data = $this->get_request_prefill_data($widget)){
+					$action->set_prefill_data_sheet($prefill_data);
+				}
 			}
 		
 			if (!$action){

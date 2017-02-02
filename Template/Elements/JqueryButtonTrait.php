@@ -57,7 +57,21 @@ trait JqueryButtonTrait {
 		} else {
 			$js_check_input_rows = '';
 		}
-	
+		
+		/*if (!is_null($action->get_input_rows_min()) || !is_null($action->get_input_rows_max())){
+			if ($action->get_input_rows_min() === $action->get_input_rows_max()){
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_error_message('"Please select exactly ' . $action->get_input_rows_min() . ' row(s)!"') . " return false;}";
+			} elseif (is_null($action->get_input_rows_max())){
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . ") {" . $this->build_js_show_error_message('"Please select at least ' . $action->get_input_rows_min() . ' row(s)!"') . " return false;}";
+			} elseif (is_null($action->get_input_rows_min())){
+				$js_check_input_rows = "if (requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_error_message('"Please select at most ' . $action->get_input_rows_max() . ' row(s)!"') . " return false;}";
+			} else {
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_error_message('"Please select from ' . $action->get_input_rows_min() . ' to ' . $action->get_input_rows_max() . ' rows first!"') . " return false;}";
+			}
+		} else {
+			$js_check_input_rows = '';
+		}*/
+		
 		$js_requestData = "
 					var requestData = " . $input_element->build_js_data_getter($action) . ";
 					" . $js_check_input_rows;

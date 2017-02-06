@@ -50,7 +50,8 @@ trait JqueryContainerTrait {
 		$widget = $this->get_widget();
 		$output_rows = '';
 		foreach ($widget->get_children_recursive() as $child){
-			if ($child->implements_interface('iTakeInput') && !$child->is_readonly()){				
+			// FIXME $child->get_meta_object()->is_exactly($action->get_meta_object()) makes it impossible to use widgets with custom objects in forms!
+			if ($child->implements_interface('iTakeInput') && !$child->is_readonly() && $child->get_meta_object()->is_exactly($action->get_meta_object())){				
 				// Collect data from all widgets that take regular input (all sorts of input fields, etc.). Make sure, only data directly related
 				// to the object the action is performed upon is collected
 				$output_rows .= 'data.rows[0]["' . $child->get_attribute_alias() . '"] = ' . $this->get_template()->get_element($child)->build_js_value_getter() . ";\n";

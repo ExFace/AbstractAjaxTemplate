@@ -6,8 +6,10 @@ use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\AbstractAjaxTemplate\Template\AbstractAjaxTemplate;
 use exface\Core\Exceptions\Configuration\ConfigOptionNotFoundError;
 use exface\Core\CommonLogic\Model\Object;
+use exface\Core\Interfaces\ExfaceClassInterface;
+use exface\Core\CommonLogic\Translation;
 
-abstract class AbstractJqueryElement {
+abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	
 	private $exf_widget = null;
 	private $template = null;
@@ -494,14 +496,14 @@ JS;
 	abstract public function build_js_busy_icon_hide();
 	
 	/**
-	 * Returns a JS snippet showing an error notification. Body and title may be any JavaScript or quoted text (quotes will not be
+	 * Returns a JS snippet showing an error message. Body and title may be any JavaScript or quoted text (quotes will not be
 	 * added automatically!!!).
 	 *
 	 * @param string $message_body_js
 	 * @param string $title_js
 	 * @return string
 	 */
-	public function build_js_show_error_message($message_body_js, $title_js = null){
+	public function build_js_show_message_error($message_body_js, $title_js = null){
 		return "alert(" . $message_body_js . ");";
 	}
 	
@@ -513,8 +515,20 @@ JS;
 	 * @param string $title
 	 * @return string
 	 */
-	public function build_js_show_success_message($message_body_js, $title = null){
+	public function build_js_show_message_success($message_body_js, $title = null){
 		return '';
+	}
+	
+	/**
+	 * Returns a JS snippet showing a server error. Body and title may be any JavaScript or quoted text (quotes will not be
+	 * added automatically!!!).
+	 *
+	 * @param string $message_body_js
+	 * @param string $title_js
+	 * @return string
+	 */
+	public function build_js_show_error($message_body_js, $title_js = null){
+		return "alert(" . $message_body_js . ");";
 	}
 	
 	/**
@@ -528,6 +542,36 @@ JS;
 			return $class;
 		} catch (ConfigOptionNotFoundError $e) {
 			return $this->get_template()->get_config()->get_option('ICON_CLASSES.DEFAULT_CLASS_PREFIX') . $icon_name;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return \exface\Core\CommonLogic\Workbench
+	 */
+	public function get_workbench(){
+		return $this->get_template()->get_workbench();
+	}
+	
+	/**
+	 * Returns the translation string for the given message id.
+	 *
+	 * This is a shortcut for calling $this->get_template()->get_app()->get_translator()->translate().
+	 *
+	 * @see Translation::translate()
+	 * @see Translation::translate_plural()
+	 *
+	 * @param string $message_id
+	 * @param array $placeholders
+	 * @param float $number_for_plurification
+	 * @return string
+	 */
+	public function translate($message_id, array $placeholders = null, $number_for_plurification = null){
+		$message_id = trim($message_id);
+		if (!is_null($number_for_plurification)){
+			return $this->get_template()->get_app()->get_translator()->translate_plural($message_id, $number_for_plurification, $placeholders);
+		} else {
+			return $this->get_template()->get_app()->get_translator()->translate($message_id, $placeholders);
 		}
 	}
 	

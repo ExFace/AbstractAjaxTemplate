@@ -46,13 +46,13 @@ trait JqueryButtonTrait {
 	protected function build_js_request_data_collector(ActionInterface $action, AbstractJqueryElement $input_element){
 		if (!is_null($action->get_input_rows_min()) || !is_null($action->get_input_rows_max())){
 			if ($action->get_input_rows_min() === $action->get_input_rows_max()){
-				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {alert('Please select exactly " . $action->get_input_rows_min() . " row(s)!'); return false;}";
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_EXACTLY_X_ROWS", array('%number%' => $action->get_input_rows_max()), $action->get_input_rows_max()) . '"') . " return false;}";
 			} elseif (is_null($action->get_input_rows_max())){
-				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . ") {alert('Please select at least " . $action->get_input_rows_min() . " row(s)!'); return false;}";
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_AT_LEAST_X_ROWS", array('%number%' => $action->get_input_rows_min()), $action->get_input_rows_max()) . '"') . " return false;}";
 			} elseif (is_null($action->get_input_rows_min())){
-				$js_check_input_rows = "if (requestData.rows.length > " . $action->get_input_rows_max() . ") {alert('Please select at most " . $action->get_input_rows_max() . " row(s)!'); return false;}";
+				$js_check_input_rows = "if (requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_AT_MOST_X_ROWS", array('%number%' => $action->get_input_rows_max()), $action->get_input_rows_max()) . '"') . " return false;}";
 			} else {
-				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {alert('Please select from " . $action->get_input_rows_min() . " to " . $action->get_input_rows_max() . " rows first!'); return false;}";
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_X_TO_Y_ROWS", array('%min%' => $action->get_input_rows_min(), '%max%' => $action->get_input_rows_max())) . '"') . " return false;}";
 			}
 		} else {
 			$js_check_input_rows = '';
@@ -141,46 +141,21 @@ trait JqueryButtonTrait {
 									" . $this->build_js_input_refresh($widget, $input_element) . "
 			                       	" . $this->build_js_busy_icon_hide() . "
 									if (response.success || response.undoURL){
-			                       		" . $this->build_js_show_success_message("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
+			                       		" . $this->build_js_show_message_success("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
 									}
 			                    } else {
 									" . $this->build_js_busy_icon_hide() . "
-									" . $this->build_js_show_error_message('response.error', '"Server error"') . "
+									" . $this->build_js_show_message_error('response.error', '"Server error"') . "
 			                    }
 							},
 							error: function(jqXHR, textStatus, errorThrown){ 
-								" . $this->build_js_show_error_message('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . " 
+								" . $this->build_js_show_error('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . " 
 								" . $this->build_js_busy_icon_hide() . "
 							}
 						});
 					";
 		
 		return $output;
-		
-		/*
-		return $this->build_js_request_data_collector($action, $input_element) . "
-						" . $input_element->build_js_busy_icon_show() . "
-						$.ajax({
-							url: '" . $this->get_ajax_url() ."',
-							type: 'POST',
-							data: {
-								action: '".$widget->get_action_alias()."',
-								resource: '".$widget->get_page_id()."',
-								element: '".$widget->get_id()."',
-								object: '" . $widget->get_meta_object_id() . "',
-								data: requestData
-							},
-							success: function(data, textStatus, jqXHR) {
-								" . $this->build_js_close_dialog($widget, $input_element) . "
-					            " . $this->build_js_input_refresh($widget, $input_element) . "
-								" . $input_element->build_js_busy_icon_hide() . "
-							},
-					        error: function(jqXHR, textStatus, errorThrown)
-					        {
-					            " . $input_element->build_js_busy_icon_hide() . "
-			            		" . $this->build_js_show_error_message('jqXHR.responseText', '"Server error"') . "
-					        }
-						});";*/
 	}
 	
 	protected function build_js_click_show_widget(ActionInterface $action, AbstractJqueryElement $input_element){

@@ -400,32 +400,19 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	 * Each element can decide itself, which data it should return for which type of action. If no action is given, the entire data
 	 * set used in the element should be returned.
 	 *
-	 * In contrast to build_js_value_getter(), which returns a value without context, the data getters retunr JS-representations of
+	 * In contrast to build_js_value_getter(), which returns a value without context, the data getters return JS-representations of
 	 * data sheets - thus, the data is alwas bound to a meta object.
 	 *
 	 * @param ActionInterface $action
-	 * @param string $custom_body_js
 	 * @return string
 	 */
-	public function build_js_data_getter(ActionInterface $action = null, $custom_body_js = null){
-		if (is_null($custom_body_js)){
-			if (method_exists($this->get_widget(), 'get_attribute_alias')){
-				$alias = $this->get_widget()->get_attribute_alias();
-			} else {
-				$alias = $this->get_widget()->get_meta_object()->get_alias_with_namespace();
-			}
-			$custom_body_js = "data.rows = [{'" . $alias . "': " . $this->build_js_value_getter() . "}]";
+	public function build_js_data_getter(ActionInterface $action = null){		
+		if (method_exists($this->get_widget(), 'get_attribute_alias')){
+			$alias = $this->get_widget()->get_attribute_alias();
+		} else {
+			$alias = $this->get_widget()->get_meta_object()->get_alias_with_namespace();
 		}
-	
-		$js = <<<JS
-		(function(){
-			var data = {};
-			data.oId = '{$this->get_widget()->get_meta_object_id()}';
-			{$custom_body_js}
-			return data;
-		})()
-JS;
-				return $js;
+		return "{oId: '" . $this->get_widget()->get_meta_object_id() . "', rows: [{'" . $alias . "': " . $this->build_js_value_getter() . "}]}";
 	}
 	
 	/**

@@ -49,12 +49,9 @@ trait JqueryContainerTrait {
 		/* @var $widget \exface\Core\Widgets\Container */
 		$widget = $this->get_widget();
 		$data_getters = array();
-		foreach ($widget->get_widgets() as $child){
+		foreach ($widget->get_input_widgets() as $child){
 			// FIXME $child->get_meta_object()->is_exactly($action->get_meta_object()) makes it impossible to use widgets with custom objects in forms!
-			if (!$child->implements_interface('iSupportStagedWriting')){	
-				if ($child->implements_interface('iTakeInput') && $child->is_readonly()){
-					continue;
-				}
+			if (!$child->implements_interface('iSupportStagedWriting')){
 				// Collect data from all widgets that take regular input (all sorts of input fields, etc.). Make sure, only data directly related
 				// to the object the action is performed upon is collected
 				//$output_rows .= $js_data_variable . '.rows[0]["' . $child->get_attribute_alias() . '"] = ' . $this->get_template()->get_element($child)->build_js_value_getter() . ";\n";

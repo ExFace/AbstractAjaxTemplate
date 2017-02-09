@@ -395,11 +395,11 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		} catch (\Throwable $e){
 			// If anything goes wrong when trying to prettify the original error, drop prettifying
 			// and throw the original exception wrapped in a notice about the failed prettification
-			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessag() . '"! See orignal error detail below.', null, $exception);
+			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
 		} catch (FatalThrowableError $e){
 			// If anything goes wrong when trying to prettify the original error, drop prettifying
 			// and throw the original exception wrapped in a notice about the failed prettification
-			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessag() . '"! See orignal error detail below.', null, $exception);
+			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
 		}
 		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
 		$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));

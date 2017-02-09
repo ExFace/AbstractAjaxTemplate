@@ -60,7 +60,11 @@ trait JqueryContainerTrait {
 				// TODO get data from non-input widgets, that support deferred CRUD operations staging their data in the GUI	
 			}
 		}
-		return "$.extend(true, {},\n" . implode(",\n", $data_getters) . "\n)";
+		if (count($data_getters) > 0){
+			return "$.extend(true, {},\n" . implode(",\n", $data_getters) . "\n)";
+		} else {
+			return '{}';
+		}
 	}
 	
 }

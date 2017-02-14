@@ -411,7 +411,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
 		}
 		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
-		$output = str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
+		$output = $this->draw_headers($debug_widget) . "\n" . str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
 		if (is_numeric($http_status_code)){
 			http_response_code($http_status_code);
 		} else {

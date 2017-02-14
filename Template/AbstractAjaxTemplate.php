@@ -187,7 +187,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 						$rows = $request_data['rows'];
 						// If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
 						if (count($rows) == 1){
-							$rows = $this->split_rows_by_multivalue_fields($rows);
+							$rows = $this->split_rows_by_multivalue_fields($rows, $data_sheet);
 						}
 						$data_sheet->add_rows($rows);
 					}
@@ -255,19 +255,28 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		return $this->request_data_sheet;
 	}
 	
-	protected function split_rows_by_multivalue_fields(array $rows){
-		// If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
+	/**
+	 * 
+	 * @param array $rows
+	 * @param DataSheetInterface $data_sheet
+	 * @return array
+	 */
+	protected function split_rows_by_multivalue_fields(array $rows, DataSheetInterface $data_sheet){
 		$result = $rows;
 		if (count($rows) == 1){
 			$row = reset($rows);
 			foreach ($row as $field => $val){
 				if (is_array($val)){
-					foreach ($val as $i => $v){
-						foreach ($rows as $nr => $r){
-							$new_nr = $nr+($nr*$i+$i);
-							$result[$new_nr] = $r;
-							$result[$new_nr][$field] = $v;
+					if ($data_sheet->get_meta_object()->has_attribute($field)){
+						foreach ($val as $i => $v){
+							foreach ($rows as $nr => $r){
+								$new_nr = $nr+($nr*$i+$i);
+								$result[$new_nr] = $r;
+								$result[$new_nr][$field] = $v;
+							}
 						}
+					} else {
+						$result[0][$field] = implode(EXF_LIST_SEPARATOR, $val);
 					}
 				}
 			}

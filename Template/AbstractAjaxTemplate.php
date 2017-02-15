@@ -45,14 +45,14 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	function draw(\exface\Core\Widgets\AbstractWidget $widget){
 		$output = '';
 		try {
-			$output .= $this->generate_html($widget);
+			$output = $this->generate_html($widget);
 			$js = $this->generate_js($widget);
 		} catch (ErrorExceptionInterface $e){
 			if ($this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				throw $e;
 			}
-			$output .= $this->generate_html($e->create_widget($widget->get_page()));
-			$js .= $this->generate_js($e->create_widget($widget->get_page()));
+			$output = $this->generate_html($e->create_widget($widget->get_page()));
+			$js = $this->generate_js($e->create_widget($widget->get_page()));
 		}
 		if ($js){
 			$output .= "\n" . '<script type="text/javascript">' . $js . '</script>';
@@ -411,7 +411,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
 		}
 		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
-		$output = $this->draw_headers($debug_widget) . "\n" . str_replace(array('[[', '{{'), array('[ [', '{ {'), $this->draw($debug_widget));
+		$output = $this->draw_headers($debug_widget) . "\n" . $this->draw($debug_widget);
 		if (is_numeric($http_status_code)){
 			http_response_code($http_status_code);
 		} else {

@@ -304,9 +304,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		
 		if ($called_in_resource_id){
 			try {
-				$this->get_workbench()->ui()->get_page_current();
-			} catch (UiPageNotFoundError $e) {
 				$this->get_workbench()->ui()->set_page_id_current($called_in_resource_id);
+				$this->get_workbench()->ui()->get_page_current();
+			} catch (\Throwable $e){
+				if (!$disable_error_handling){
+					$this->set_response_from_error($e, UiPageFactory::create_empty($this->get_workbench()->ui()));
+					return $this->get_response();
+				}
 			}
 		}
 		
@@ -370,8 +374,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			
 		} catch (ErrorExceptionInterface $e){
 			if (!$disable_error_handling && !$this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
-				$ui = $this->get_workbench()->ui();
-				$this->set_response_from_error($e, UiPageFactory::create($ui, 0));
+				$this->set_response_from_error($e, UiPageFactory::create($this->get_workbench()->ui(), 0));
 			} else {
 				throw $e;
 			}

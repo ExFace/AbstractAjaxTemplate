@@ -54,6 +54,7 @@ trait JqueryButtonTrait {
 			} else {
 				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_X_TO_Y_ROWS", array('%min%' => $action->get_input_rows_min(), '%max%' => $action->get_input_rows_max())) . '"') . " return false;}";
 			}
+			$js_check_input_rows = 'if (requestData.rows){' . $js_check_input_rows . '}';
 		} else {
 			$js_check_input_rows = '';
 		}

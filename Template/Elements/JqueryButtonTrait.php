@@ -141,9 +141,12 @@ trait JqueryButtonTrait {
 									" . $this->build_js_close_dialog($widget, $input_element) . "
 									" . $this->build_js_input_refresh($widget, $input_element) . "
 			                       	" . $this->build_js_busy_icon_hide() . "
-			                       	$(document).trigger('" . $action->get_alias_with_namespace() . ".action.performed');
+			                       	$(document).trigger('" . $action->get_alias_with_namespace() . ".action.performed', [requestData]);
 									if (response.success || response.undoURL){
 			                       		" . $this->build_js_show_message_success("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
+										if(response.redirect){
+			                       			window.location.href = response.redirect;
+	                       				}
 									}
 			                    } else {
 									" . $this->build_js_busy_icon_hide() . "

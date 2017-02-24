@@ -1,5 +1,5 @@
 {
-	"name" : "exface/AbstractAjaxTemplate",
+	"name" : "ExFace/AbstractAjaxTemplate",
 	"description" : "Template skeleton for AJAX HTML-Templates for ExFace Apps",
 	"type" : "library",
 	"license" : "GPL-3.0+",

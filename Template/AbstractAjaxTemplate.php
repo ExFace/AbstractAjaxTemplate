@@ -18,7 +18,6 @@ use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
-use exface\Core\Exceptions\UiPageNotFoundError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();

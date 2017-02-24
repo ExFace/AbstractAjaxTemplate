@@ -306,7 +306,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			try {
 				$this->get_workbench()->ui()->set_page_id_current($called_in_resource_id);
 				$this->get_workbench()->ui()->get_page_current();
-			} catch (\Throwable $e){
+			} catch (ErrorExceptionInterface $e){
 				if (!$disable_error_handling){
 					$this->set_response_from_error($e, UiPageFactory::create_empty($this->get_workbench()->ui()));
 					return $this->get_response();

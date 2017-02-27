@@ -1,6 +1,6 @@
 <?php namespace exface\AbstractAjaxTemplate\Template\Elements;
 
-trait JqueryInputReferenceTrait {
+trait JqueryLiveReferenceTrait {
 	
 	protected function build_js_live_reference(){
 		$output = '';

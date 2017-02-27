@@ -1,6 +1,6 @@
 <?php namespace exface\AbstractAjaxTemplate\Template\Elements;
 
-trait JqueryChartReferenceTrait {
+trait JqueryFlotTrait {
 	
 	protected function build_js_live_reference(){
 		$output = '';
@@ -13,7 +13,6 @@ trait JqueryChartReferenceTrait {
 	
 	/**
 	 * Makes sure, the Chart is always updated, once the linked data widget loads new data - of course, only if there is a data link defined!
-	 * @return euiChart
 	 */
 	protected function register_live_reference_at_linked_element(){
 		if ($link = $this->get_widget()->get_data_widget_link()){

@@ -48,7 +48,7 @@ trait JqueryButtonTrait {
 			if ($action->get_input_rows_min() === $action->get_input_rows_max()){
 				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . " || requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_EXACTLY_X_ROWS", array('%number%' => $action->get_input_rows_max()), $action->get_input_rows_max()) . '"') . " return false;}";
 			} elseif (is_null($action->get_input_rows_max())){
-				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_AT_LEAST_X_ROWS", array('%number%' => $action->get_input_rows_min()), $action->get_input_rows_max()) . '"') . " return false;}";
+				$js_check_input_rows = "if (requestData.rows.length < " . $action->get_input_rows_min() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_AT_LEAST_X_ROWS", array('%number%' => $action->get_input_rows_min()), $action->get_input_rows_min()) . '"') . " return false;}";
 			} elseif (is_null($action->get_input_rows_min())){
 				$js_check_input_rows = "if (requestData.rows.length > " . $action->get_input_rows_max() . ") {" . $this->build_js_show_message_error('"' . $this->translate("MESSAGE.SELECT_AT_MOST_X_ROWS", array('%number%' => $action->get_input_rows_max()), $action->get_input_rows_max()) . '"') . " return false;}";
 			} else {

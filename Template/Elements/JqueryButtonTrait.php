@@ -191,7 +191,13 @@ trait JqueryButtonTrait {
 	}
 	
 	protected function build_js_click_run_template_script(ActionInterface $action, AbstractJqueryElement $input_element){
-		return $action->print_script($input_element->get_id());
+		$widget = $this->get_widget();
+		
+		$output = $action->print_script($input_element->get_id());
+		$output .= '
+				' . $this->build_js_close_dialog($widget, $input_element);
+		
+		return $output;
 	}
 	
 	protected function build_js_undo_url(ActionInterface $action, AbstractJqueryElement $input_element){

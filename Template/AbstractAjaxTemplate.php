@@ -50,8 +50,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			if ($this->get_workbench()->get_config()->get_option('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')){
 				throw $e;
 			}
-			$output = $this->generate_html($e->create_widget($widget->get_page()));
-			$js = $this->generate_js($e->create_widget($widget->get_page()));
+			$this->set_response_from_error($e, $widget->get_page());
+			$output = $this->get_response();
 		}
 		if ($js){
 			$output .= "\n" . '<script type="text/javascript">' . $js . '</script>';

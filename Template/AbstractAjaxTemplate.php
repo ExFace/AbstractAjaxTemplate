@@ -390,11 +390,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			if ($action->is_undoable()){
 				$response['undoable'] = '1';
 			}
-			
+			if ($action->implements_interface('iShowUrl') && $action->get_result()){
+				$response['redirect'] = $action->get_result();
+			}
 			// Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
 			// there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)
 			$output = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
-		}
+		} 
 		
 		$this->set_response($output);
 		return $this;

@@ -108,10 +108,15 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		if (!array_key_exists($widget->get_page_id(), $this->elements) || !array_key_exists($widget->get_id(), $this->elements[$widget->get_page_id()])){
 			$elem_class = $this->get_class($widget);
 			$instance = new $elem_class($widget, $this);
-			$this->elements[$widget->get_page_id()][$widget->get_id()] = $instance;
+			//$this->elements[$widget->get_page_id()][$widget->get_id()] = $instance;
 		}
 		
 		return $this->elements[$widget->get_page_id()][$widget->get_id()];
+	}
+	
+	public function register_element($element){
+		$this->elements[$element->get_widget()->get_page_id()][$element->get_widget()->get_id()] = $element;
+		return $this;
 	}
 	
 	protected function get_class(WidgetInterface $widget){

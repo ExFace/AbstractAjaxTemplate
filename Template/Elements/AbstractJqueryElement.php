@@ -34,6 +34,7 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	public function __construct(WidgetInterface $widget, TemplateInterface $template){
 		$this->set_widget($widget);
 		$this->template = $template;
+		$template->register_element($this);
 		$this->init();
 	}
 	

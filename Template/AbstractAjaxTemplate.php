@@ -14,7 +14,7 @@ use exface\Core\Interfaces\WidgetInterface;
 use exface\AbstractAjaxTemplate\Template\Elements\AbstractJqueryElement;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
-use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
+use exface\Core\Exceptions\Templates\TemplateOutputError;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
@@ -591,7 +591,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	}	
 	
 	public function encode_data($serializable_data){
-		return json_encode($serializable_data);
+		$result = json_encode($serializable_data);
+		if (!$result){
+			throw new TemplateOutputError('Error encoding data: ' . json_last_error_msg());
+		}
+		return $result;
 	}
+	
 }
 ?>

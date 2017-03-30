@@ -408,8 +408,16 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	} 
 	
 	protected function set_response_from_error(ErrorExceptionInterface $exception, UiPageInterface $page){
+		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
+		if (is_numeric($http_status_code)){
+			http_response_code($http_status_code);
+		} else {
+			http_response_code(500);
+		}
+		
 		try {
 			$debug_widget = $exception->create_widget($page);
+			$output = $this->draw_headers($debug_widget) . "\n" . $this->draw($debug_widget);
 		} catch (\Throwable $e){
 			// If anything goes wrong when trying to prettify the original error, drop prettifying
 			// and throw the original exception wrapped in a notice about the failed prettification
@@ -419,13 +427,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			// and throw the original exception wrapped in a notice about the failed prettification
 			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
 		}
-		$http_status_code = is_numeric($exception->get_status_code()) ? $exception->get_status_code() : 500;
-		$output = $this->draw_headers($debug_widget) . "\n" . $this->draw($debug_widget);
-		if (is_numeric($http_status_code)){
-			http_response_code($http_status_code);
-		} else {
-			http_response_code(500);
-		}
+		
 		$this->set_response($output);
 		return $this;
 	}

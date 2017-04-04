@@ -230,7 +230,7 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	 */
 	public function get_id(){
 		if (is_null($this->id)){
-			$this->id = $this->clean_id($this->get_widget()->get_id()) . ($this->get_template()->get_workbench()->get_request_id() ? '-' . $this->get_template()->get_workbench()->get_request_id() : '');
+			$this->id = $this->clean_id($this->get_widget()->get_id()) . ($this->get_template()->get_workbench()->get_request_id() ? '_' . $this->get_template()->get_workbench()->get_request_id() : '');
 		}
 		return $this->id;
 	}

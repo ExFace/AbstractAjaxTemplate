@@ -18,6 +18,7 @@ use exface\Core\Exceptions\Templates\TemplateOutputError;
 use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
+use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -314,6 +315,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				if (!$disable_error_handling){
 					$this->set_response_from_error($e, UiPageFactory::create_empty($this->get_workbench()->ui()));
 					return $this->get_response();
+				} else {
+					throw $e;
 				}
 			}
 		}

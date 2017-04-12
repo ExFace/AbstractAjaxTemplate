@@ -1,7 +1,15 @@
 <?php namespace exface\AbstractAjaxTemplate\Template\Elements;
 
 use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Widgets\Container;
 
+/**
+ * 
+ * @method Container get_widget()
+ * 
+ * @author Andrej Kabachnik
+ *
+ */
 trait JqueryContainerTrait {
 	
 	public function generate_html(){

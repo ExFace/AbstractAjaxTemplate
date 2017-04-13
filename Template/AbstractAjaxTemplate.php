@@ -234,8 +234,10 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			
 			// Set filters
 			foreach ($filters as $fltr_attr => $fltr){
-				foreach ($fltr as $val){
-					$data_sheet->add_filter_from_string($fltr_attr, $val);
+				if (is_array($fltr)) {
+					foreach ($fltr as $val) {
+						$data_sheet->add_filter_from_string($fltr_attr, $val);
+					}
 				}
 			}
 			

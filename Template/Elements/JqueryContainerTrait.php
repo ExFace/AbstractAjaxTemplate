@@ -74,5 +74,31 @@ trait JqueryContainerTrait {
 		}
 	}
 	
+	/**
+	 * Builds a JavaScript-function which validates all the input elements of the container.
+	 * Returns true if all elements are valid, returns false if at least one element is
+	 * invalid.
+	 * 
+	 * @return string
+	 */
+	public function build_js_validator(){
+		$widget = $this->get_widget();
+		
+		$output = '
+				(function(){';
+		foreach ($widget->get_input_widgets() as $child) {
+			if ($child->is_required() && !$child->is_hidden()) {
+				$validator = $this->get_template()->get_element($child)->build_js_validator();
+				$output .= '
+					if(!' . $validator . ') { return false; }';
+			}
+		}
+		$output .= '
+					return true;
+				})()';
+		
+		return $output;
+	}
+	
 }
 ?>

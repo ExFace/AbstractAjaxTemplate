@@ -75,7 +75,7 @@ trait JqueryContainerTrait {
 	}
 	
 	/**
-	 * Builds a JavaScript-function which validates all the input elements of the container.
+	 * Returns an inline JS snippet which validates the input elements of the container.
 	 * Returns true if all elements are valid, returns false if at least one element is
 	 * invalid.
 	 * 
@@ -87,15 +87,38 @@ trait JqueryContainerTrait {
 		$output = '
 				(function(){';
 		foreach ($widget->get_input_widgets() as $child) {
-			if ($child->is_required() && !$child->is_hidden()) {
-				$validator = $this->get_template()->get_element($child)->build_js_validator();
-				$output .= '
+			$validator = $this->get_template()->get_element($child)->build_js_validator();
+			$output .= '
 					if(!' . $validator . ') { return false; }';
-			}
 		}
 		$output .= '
 					return true;
 				})()';
+		
+		return $output;
+	}
+	
+	/**
+	 * Returns a JavaScript snippet which handles the situation where not all input elements are
+	 * valid. The invalid elements are collected and an error message is displayed.
+	 * 
+	 * @return string
+	 */
+	public function build_js_validation_error(){
+		$widget = $this->get_widget();
+		
+		$output = '
+				var invalidElements = [];';
+		foreach ($widget->get_input_widgets() as $child) {
+			$validator = $this->get_template()->get_element($child)->build_js_validator();
+			if (!$alias = $child->get_caption()) {
+				$alias = method_exists($child, 'get_attribute_alias') ? $child->get_attribute_alias() : $child->get_meta_object()->get_alias_with_namespace();
+			}
+			$output .= '
+				if(!' . $validator . ') { invalidElements.push("' . $alias . '"); }';
+		}
+		$output .= '
+				' . $this->build_js_show_message_error('"' . $this->translate('MESSAGE.FILL_REQUIRED_ATTRIBUTES') . '" + invalidElements.join(", ")');
 		
 		return $output;
 	}

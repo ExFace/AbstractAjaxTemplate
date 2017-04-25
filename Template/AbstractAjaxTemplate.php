@@ -234,8 +234,10 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			
 			// Set filters
 			foreach ($filters as $fltr_attr => $fltr){
-				foreach ($fltr as $val){
-					$data_sheet->add_filter_from_string($fltr_attr, $val);
+				if (is_array($fltr)) {
+					foreach ($fltr as $val) {
+						$data_sheet->add_filter_from_string($fltr_attr, $val);
+					}
 				}
 			}
 			
@@ -442,8 +444,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	 */
 	public function get_request_prefill_data(AbstractWidget $widget_to_prefill){	
 		// Look for prefill data
-		$prefill_string = $this->get_workbench()->get_request_params()['prefill'];
-		if ($prefill_string && $prefill_uxon = UxonObject::from_anything($prefill_string)){
+		if ($prefill_string = $this->get_workbench()->get_request_params()['prefill']){
+			$prefill_uxon = UxonObject::from_anything($prefill_string);
+			if ($prefill_string && $prefill_uxon->is_empty()){
+				throw new TemplateRequestParsingError('Invalid prefill URL parameter "' . $prefill_string . '"!');
+			}
+		}
+		if ($prefill_uxon && !$prefill_uxon->is_empty()){
 			$exface = $this->get_workbench();
 			if (!$prefill_uxon->get_property('meta_object_id') && $prefill_uxon->get_property('oId')){
 				$prefill_uxon->set_property('meta_object_id', $prefill_uxon->get_property('oId'));

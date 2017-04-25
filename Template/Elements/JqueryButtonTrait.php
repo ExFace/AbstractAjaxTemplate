@@ -167,8 +167,15 @@ trait JqueryButtonTrait {
 		$widget = $this->get_widget();
 		$output = '';
 		if ($action->get_page_id() != $this->get_page_id()){
-			$output = $this->build_js_request_data_collector($action, $input_element) . $input_element->build_js_busy_icon_show() . "
-			 	window.location.href = '" . $this->get_template()->create_link_internal($action->get_page_id()) . "?prefill={\"meta_object_id\":\"" . $widget->get_meta_object_id() . "\",\"rows\":[{\"" . $widget->get_meta_object()->get_uid_alias() . "\":\"' + requestData.rows[0]." . $widget->get_meta_object()->get_uid_alias() . " + '\"}]}';";
+			$output = <<<JS
+				{$this->build_js_request_data_collector($action, $input_element)}
+				{$input_element->build_js_busy_icon_show()}
+				var prefillRows = [];
+				if (requestData.rows[0]["{$widget->get_meta_object()->get_uid_alias()}"]){
+					prefillRows.push({{$widget->get_meta_object()->get_uid_alias()}: requestData.rows[0]["{$widget->get_meta_object()->get_uid_alias()}"]});
+				}
+			 	window.location.href = '{$this->get_template()->create_link_internal($action->get_page_id())}?prefill={"meta_object_id":"{$widget->get_meta_object_id()}","rows": ' + JSON.stringify(prefillRows) + '}';
+JS;
 		}
 		return $output;
 	}

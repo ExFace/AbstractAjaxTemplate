@@ -8,6 +8,7 @@ use exface\Core\Exceptions\Configuration\ConfigOptionNotFoundError;
 use exface\Core\CommonLogic\Model\Object;
 use exface\Core\Interfaces\ExfaceClassInterface;
 use exface\Core\CommonLogic\Translation;
+use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
 
 abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	
@@ -411,7 +412,7 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	 * @return string
 	 */
 	public function build_js_data_getter(ActionInterface $action = null){		
-		if (method_exists($this->get_widget(), 'get_attribute_alias')){
+		if ($this->get_widget() instanceof iShowSingleAttribute){
 			$alias = $this->get_widget()->get_attribute_alias();
 		} else {
 			$alias = $this->get_widget()->get_meta_object()->get_alias_with_namespace();

@@ -562,5 +562,25 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface {
 		return $this->get_template()->get_app()->get_translator()->translate($message_id, $placeholders, $number_for_plurification);
 	}
 	
+	/**
+	 * Returns an inline JS snippet which validates the widget. Returns true if the widget is
+	 * valid, returns false if the widget is invalid.
+	 *
+	 * @return string
+	 */
+	public function build_js_validator(){
+		return 'true';
+	}
+	
+	/**
+	 * Returns a JavaScript snippet which handles the situation where the widget is invalid e.g.
+	 * by overwriting this function the widget could be highlighted or an error message could be
+	 * shown.
+	 *
+	 * @return string
+	 */
+	public function build_js_validation_error(){
+		return '';
+	}
 }
 ?>

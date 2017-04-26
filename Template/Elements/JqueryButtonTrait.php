@@ -119,45 +119,49 @@ trait JqueryButtonTrait {
 		
 		$output = $this->build_js_request_data_collector($action, $input_element);
 		$output .= "
-						" . $this->build_js_busy_icon_show() . "
-						$.ajax({
-							type: 'POST',
-							url: '" . $this->get_ajax_url() ."',
-							data: {	
-								action: '".$widget->get_action_alias()."',
-								resource: '" . $widget->get_page_id() . "',
-								element: '" . $widget->get_id() . "',
-								object: '" . $widget->get_meta_object_id() . "',
-								data: requestData
-							},
-							success: function(data, textStatus, jqXHR) {
-								var response = {};
-								try {
-									response = $.parseJSON(data);
-								} catch (e) {
-									response.error = data;
-								}
-			                   	if (response.success){
-									" . $this->build_js_close_dialog($widget, $input_element) . "
-									" . $this->build_js_input_refresh($widget, $input_element) . "
-			                       	" . $this->build_js_busy_icon_hide() . "
-			                       	$(document).trigger('" . $action->get_alias_with_namespace() . ".action.performed', [requestData]);
-									if (response.success || response.undoURL){
-			                       		" . $this->build_js_show_message_success("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
-										if(response.redirect){
-			                       			window.location.href = response.redirect;
-	                       				}
+						if (" . $input_element->build_js_validator() . ") {
+							" . $this->build_js_busy_icon_show() . "
+							$.ajax({
+								type: 'POST',
+								url: '" . $this->get_ajax_url() ."',
+								data: {	
+									action: '".$widget->get_action_alias()."',
+									resource: '" . $widget->get_page_id() . "',
+									element: '" . $widget->get_id() . "',
+									object: '" . $widget->get_meta_object_id() . "',
+									data: requestData
+								},
+								success: function(data, textStatus, jqXHR) {
+									var response = {};
+									try {
+										response = $.parseJSON(data);
+									} catch (e) {
+										response.error = data;
 									}
-			                    } else {
+				                   	if (response.success){
+										" . $this->build_js_close_dialog($widget, $input_element) . "
+										" . $this->build_js_input_refresh($widget, $input_element) . "
+				                       	" . $this->build_js_busy_icon_hide() . "
+				                       	$(document).trigger('" . $action->get_alias_with_namespace() . ".action.performed', [requestData]);
+										if (response.success || response.undoURL){
+				                       		" . $this->build_js_show_message_success("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
+											if(response.redirect){
+				                       			window.location.href = response.redirect;
+		                       				}
+										}
+				                    } else {
+										" . $this->build_js_busy_icon_hide() . "
+										" . $this->build_js_show_message_error('response.error', '"Server error"') . "
+				                    }
+								},
+								error: function(jqXHR, textStatus, errorThrown){ 
+									" . $this->build_js_show_error('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . " 
 									" . $this->build_js_busy_icon_hide() . "
-									" . $this->build_js_show_message_error('response.error', '"Server error"') . "
-			                    }
-							},
-							error: function(jqXHR, textStatus, errorThrown){ 
-								" . $this->build_js_show_error('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . " 
-								" . $this->build_js_busy_icon_hide() . "
-							}
-						});
+								}
+							});
+						} else {
+							" . $input_element->build_js_validation_error() . "
+						}
 					";
 		
 		return $output;

@@ -337,7 +337,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 				} else {
 					$widget = $this->get_workbench()->ui()->get_page($called_in_resource_id)->get_widget_root();
 				}
-				if (!$object_id) $object_id = $widget->get_meta_object()->get_id();
+				if (!$object_id && $widget) $object_id = $widget->get_meta_object()->get_id();
 				if ($widget instanceof iTriggerAction && (!$action_alias || strtolower($action_alias) == strtolower($widget->get_action()->get_alias_with_namespace()))){
 					$action = $widget->get_action();
 				}

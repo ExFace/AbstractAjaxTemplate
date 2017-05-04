@@ -400,8 +400,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			if ($action->is_undoable()){
 				$response['undoable'] = '1';
 			}
-			if ($action->implements_interface('iShowUrl') && $action->get_result()){
-				$response['redirect'] = $action->get_result();
+			//check if result is a properly formed link
+			if (is_string($action->get_result())) {
+				$url = filter_var($action->get_result(), FILTER_SANITIZE_STRING);
+				if (substr($url, 0, 4) == 'http'){
+					$response['redirect'] = $url;
+				}
 			}
 			// Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
 			// there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)

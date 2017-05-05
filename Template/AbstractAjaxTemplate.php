@@ -2,6 +2,7 @@
 
 use exface\Core\CommonLogic\AbstractTemplate;
 use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Log\Log;
 use exface\Core\Widgets\Data;
 use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
@@ -432,7 +433,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 			// and throw the original exception wrapped in a notice about the failed prettification
 			throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
 		}
-		
+
+		Log::getDefaultLogger()->error(
+			$exception->getMessage(),
+			array("id" => $exception->get_id()),
+			$exception
+		);
+
 		$this->set_response($output);
 		return $this;
 	}

@@ -1,8 +1,8 @@
 <?php namespace exface\AbstractAjaxTemplate\Template;
 
 use exface\Core\CommonLogic\AbstractTemplate;
+use exface\Core\CommonLogic\Log\Log;
 use exface\Core\Interfaces\Actions\ActionInterface;
-use exface\Core\Log\Log;
 use exface\Core\Widgets\Data;
 use exface\Core\Widgets\AbstractWidget;
 use exface\Core\Interfaces\Widgets\iTriggerAction;

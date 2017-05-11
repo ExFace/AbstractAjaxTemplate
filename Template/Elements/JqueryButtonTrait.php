@@ -146,8 +146,13 @@ trait JqueryButtonTrait {
 										if (response.success || response.undoURL){
 				                       		" . $this->build_js_show_message_success("response.success + (response.undoable ? ' <a href=\"" . $this->build_js_undo_url($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
 											if(response.redirect){
-				                       			window.location.href = response.redirect;
-		                       				}
+												if (response.redirect.indexOf('target=_blank')!==0) {
+													$('<a>').attr('href', response.redirect.replace('target=_blank','')).attr('target', '_blank')[0].click();
+												}
+												else {
+													window.location.href = response.redirect;
+												}
+	                       					}
 										}
 				                    } else {
 										" . $this->build_js_busy_icon_hide() . "

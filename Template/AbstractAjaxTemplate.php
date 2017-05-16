@@ -20,6 +20,7 @@ use exface\Core\Interfaces\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
+use exface\Core\Events\WidgetEvent;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	private $elements = array();
@@ -37,6 +38,16 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 	protected $request_action_alias = NULL;
 	protected $request_prefill_data = NULL;
 	protected $request_system_vars = array();
+	
+	/**
+	 * 
+	 * {@inheritDoc}
+	 * @see \exface\Core\CommonLogic\AbstractTemplate::init()
+	 */
+	protected function init(){
+		parent::init();
+		$this->get_workbench()->event_manager()->add_listener('#.Widget.Remove.After', function(WidgetEvent $event) { $this->remove_element($event->get_widget()); });
+	}
 	
 	/**
 	 * 
@@ -114,6 +125,10 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		}
 		
 		return $this->elements[$widget->get_page_id()][$widget->get_id()];
+	}
+	
+	public function remove_element(AbstractWidget $widget){
+		unset($this->elements[$widget->get_page_id()][$widget->get_id()]);
 	}
 	
 	public function register_element($element){
@@ -620,6 +635,5 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate {
 		}
 		return $result;
 	}
-	
 }
 ?>

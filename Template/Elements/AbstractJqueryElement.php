@@ -582,5 +582,23 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface {
 	public function build_js_validation_error(){
 		return '';
 	}
+	
+	/**
+	 * Returns an inline JS snippet which enables the widget.
+	 *
+	 * @return string
+	 */
+	public function build_js_enabler(){
+		return '$("#' . $this->get_id() . '").prop("disabled", false)';
+	}
+	
+	/**
+	 * Returns an inline JS snippet which disables the widget.
+	 *
+	 * @return string
+	 */
+	public function build_js_disabler(){
+		return '$("#' . $this->get_id() . '").prop("disabled", true)';
+	}
 }
 ?>

@@ -49,12 +49,25 @@ trait JqueryLiveReferenceTrait {
 			$link->set_widget_id_space($this->get_widget()->get_id_space());
 			$linked_element = $this->get_template()->get_element_by_widget_id($link->get_widget_id(), $this->get_page_id());
 			if ($linked_element){
-				$enable_widget_script = $this->get_widget()->is_disabled() ? '' :
+				switch ($condition->comparator) {
+					case EXF_COMPARATOR_IN: // [
+					case EXF_COMPARATOR_NOT_IN: // ![
+					case EXF_COMPARATOR_IS: // =
+						// TODO fuer diese Comparatoren muss noch der JavaScript generiert werden
+						break;
+					case EXF_COMPARATOR_IS_NOT: // !=
+					case EXF_COMPARATOR_EQUALS: // ==
+					case EXF_COMPARATOR_EQUALS_NOT: // !==
+					case EXF_COMPARATOR_LESS_THAN: // <
+					case EXF_COMPARATOR_LESS_THAN_OR_EQUALS: //<=
+					case EXF_COMPARATOR_GREATER_THAN: // >
+					case EXF_COMPARATOR_GREATER_THAN_OR_EQUALS: // >=
+						$enable_widget_script = $this->get_widget()->is_disabled() ? '' :
 							$this->build_js_enabler() . ';
 							// Sonst wird ein leeres required Widget nicht als invalide angezeigt
 							$("#' . $this->get_id() . '").' . $this->get_element_type() . '("validate");';
-				
-				$output = <<<JS
+						
+						$output = <<<JS
 
 						if ({$linked_element->build_js_value_getter($link->get_column_id())} {$condition->comparator} "{$condition->value}") {
 							{$this->build_js_disabler()};
@@ -62,6 +75,7 @@ trait JqueryLiveReferenceTrait {
 							{$enable_widget_script}
 						}
 JS;
+				}
 			}
 		}
 		return $output;
@@ -80,15 +94,29 @@ JS;
 			$link->set_widget_id_space($this->get_widget()->get_id_space());
 			$linked_element = $this->get_template()->get_element_by_widget_id($link->get_widget_id(), $this->get_page_id());
 			if ($linked_element){
-				$output .= <<<JS
+				switch ($condition->comparator) {
+					case EXF_COMPARATOR_IN: // [
+					case EXF_COMPARATOR_NOT_IN: // ![
+					case EXF_COMPARATOR_IS: // =
+						// TODO fuer diese Comparatoren muss noch der JavaScript generiert werden
+						break;
+					case EXF_COMPARATOR_IS_NOT: // !=
+					case EXF_COMPARATOR_EQUALS: // ==
+					case EXF_COMPARATOR_EQUALS_NOT: // !==
+					case EXF_COMPARATOR_LESS_THAN: // <
+					case EXF_COMPARATOR_LESS_THAN_OR_EQUALS: //<=
+					case EXF_COMPARATOR_GREATER_THAN: // >
+					case EXF_COMPARATOR_GREATER_THAN_OR_EQUALS: // >=
+						$output .= <<<JS
 
-		// Die unten stehende Zeile funktioniert nicht, da nach einem Prefill normalerweise ein leerer Wert zurueckkommt,
-		// deshalb wird beim initialisieren momentan einfach geschaut ob irgendein Wert vorhanden ist.
-		// if ({$linked_element->build_js_value_getter($link->get_column_id())} {$condition->comparator} "{$condition->value}") {
-		if ({$linked_element->build_js_value_getter()} {$condition->comparator} "{$condition->value}") {
-			{$this->build_js_disabler()};
-		}
+						// Man muesste eigentlich schauen ob ein bestimmter Wert vorhanden ist: build_js_value_getter(link->get_column_id()).
+						// Da nach einem Prefill dann aber normalerweise ein leerer Wert zurueckkommt, wird beim initialisieren
+						// momentan einfach geschaut ob irgendein Wert vorhanden ist.
+						if ({$linked_element->build_js_value_getter()} {$condition->comparator} "{$condition->value}") {
+							{$this->build_js_disabler()};
+						}
 JS;
+				}
 			}
 		}
 		return $output;

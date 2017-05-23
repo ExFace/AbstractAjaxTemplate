@@ -50,11 +50,6 @@ trait JqueryLiveReferenceTrait {
 			$linked_element = $this->get_template()->get_element_by_widget_id($link->get_widget_id(), $this->get_page_id());
 			if ($linked_element){
 				switch ($condition->comparator) {
-					case EXF_COMPARATOR_IN: // [
-					case EXF_COMPARATOR_NOT_IN: // ![
-					case EXF_COMPARATOR_IS: // =
-						// TODO fuer diese Comparatoren muss noch der JavaScript generiert werden
-						break;
 					case EXF_COMPARATOR_IS_NOT: // !=
 					case EXF_COMPARATOR_EQUALS: // ==
 					case EXF_COMPARATOR_EQUALS_NOT: // !==
@@ -75,6 +70,12 @@ trait JqueryLiveReferenceTrait {
 							{$enable_widget_script}
 						}
 JS;
+						break;
+					case EXF_COMPARATOR_IN: // [
+					case EXF_COMPARATOR_NOT_IN: // ![
+					case EXF_COMPARATOR_IS: // =
+					default:
+						// TODO fuer diese Comparatoren muss noch der JavaScript generiert werden
 				}
 			}
 		}
@@ -95,11 +96,6 @@ JS;
 			$linked_element = $this->get_template()->get_element_by_widget_id($link->get_widget_id(), $this->get_page_id());
 			if ($linked_element){
 				switch ($condition->comparator) {
-					case EXF_COMPARATOR_IN: // [
-					case EXF_COMPARATOR_NOT_IN: // ![
-					case EXF_COMPARATOR_IS: // =
-						// TODO fuer diese Comparatoren muss noch der JavaScript generiert werden
-						break;
 					case EXF_COMPARATOR_IS_NOT: // !=
 					case EXF_COMPARATOR_EQUALS: // ==
 					case EXF_COMPARATOR_EQUALS_NOT: // !==
@@ -116,6 +112,12 @@ JS;
 							{$this->build_js_disabler()};
 						}
 JS;
+						break;
+					case EXF_COMPARATOR_IN: // [
+					case EXF_COMPARATOR_NOT_IN: // ![
+					case EXF_COMPARATOR_IS: // =
+					default:
+						// TODO fuer diese Comparatoren muss noch der JavaScript generiert werden
 				}
 			}
 		}

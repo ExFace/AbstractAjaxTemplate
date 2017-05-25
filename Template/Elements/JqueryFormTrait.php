@@ -1,33 +1,35 @@
-<?php namespace exface\AbstractAjaxTemplate\Template\Elements;
+<?php
+namespace exface\AbstractAjaxTemplate\Template\Elements;
 
 use exface\Core\Widgets\Form;
 
 /**
- * 
- * @method Form get_widget()
- * 
- * @author Andrej Kabachnik
  *
+ * @method Form get_widget()
+ *        
+ * @author Andrej Kabachnik
+ *        
  */
 trait JqueryFormTrait {
-	
-	function build_html_buttons(){
-		$output = '';
-		foreach ($this->get_widget()->get_buttons() as $btn){
-			$output .= $this->get_template()->generate_html($btn);
-		}
-		
-		return $output;
-	}
-	
-	function build_js_buttons(){
-		$output = '';
-		foreach ($this->get_widget()->get_buttons() as $btn){
-			$output .= $this->get_template()->generate_js($btn);
-		}
-		
-		return $output;
-	}
-	
+
+    function buildHtmlButtons()
+    {
+        $output = '';
+        foreach ($this->getWidget()->getButtons() as $btn) {
+            $output .= $this->getTemplate()->generateHtml($btn);
+        }
+        
+        return $output;
+    }
+
+    function buildJsButtons()
+    {
+        $output = '';
+        foreach ($this->getWidget()->getButtons() as $btn) {
+            $output .= $this->getTemplate()->generateJs($btn);
+        }
+        
+        return $output;
+    }
 }
 ?>

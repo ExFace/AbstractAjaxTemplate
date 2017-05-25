@@ -8,7 +8,7 @@ use exface\Core\Widgets\DataTable;
  *
  * @see http://www.datatables.net
  *
- * @method DataTable get_widget()
+ * @method DataTable getWidget()
  *        
  * @author Andrej Kabachnik
  *        

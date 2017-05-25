@@ -7,7 +7,7 @@ use exface\Core\Widgets\DataTable;
  * This trait contains common methods for templates elements inheriting from the AbstractJqueryElement and representing
  * the DataTable widget.
  *
- * @method DataTable get_widget()
+ * @method DataTable getWidget()
  *        
  * @author Andrej Kabachnik
  *        

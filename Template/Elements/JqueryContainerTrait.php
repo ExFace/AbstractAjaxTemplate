@@ -6,7 +6,7 @@ use exface\Core\Widgets\Container;
 
 /**
  *
- * @method Container get_widget()
+ * @method Container getWidget()
  *        
  * @author Andrej Kabachnik
  *        
@@ -128,7 +128,7 @@ trait JqueryContainerTrait {
         foreach ($widget->getInputWidgets() as $child) {
             $validator = $this->getTemplate()->getElement($child)->buildJsValidator();
             if (! $alias = $child->getCaption()) {
-                $alias = method_exists($child, 'get_attribute_alias') ? $child->getAttributeAlias() : $child->getMetaObject()->getAliasWithNamespace();
+                $alias = method_exists($child, 'getAttributeAlias') ? $child->getAttributeAlias() : $child->getMetaObject()->getAliasWithNamespace();
             }
             $output .= '
 				if(!' . $validator . ') { invalidElements.push("' . $alias . '"); }';

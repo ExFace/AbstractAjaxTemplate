@@ -5,7 +5,7 @@ use exface\Core\Widgets\Form;
 
 /**
  *
- * @method Form get_widget()
+ * @method Form getWidget()
  *        
  * @author Andrej Kabachnik
  *        

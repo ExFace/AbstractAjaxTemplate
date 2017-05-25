@@ -5,7 +5,7 @@ use exface\Core\Widgets\Filter;
 
 /**
  *
- * @method Filter get_widget()
+ * @method Filter getWidget()
  *        
  * @author aka
  *        

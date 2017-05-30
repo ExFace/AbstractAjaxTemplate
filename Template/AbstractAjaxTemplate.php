@@ -21,6 +21,8 @@ use exface\Core\Factories\UiPageFactory;
 use exface\Core\Exceptions\RuntimeException;
 use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Events\WidgetEvent;
+use exface\Core\Interfaces\Exceptions\ExceptionInterface;
+use exface\Core\Exceptions\InternalError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate
 {
@@ -81,10 +83,15 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         try {
             $output = $this->generateHtml($widget);
             $js = $this->generateJs($widget);
-        } catch (ErrorExceptionInterface $e) {
+        } catch (\Throwable $e) {
             if ($this->getWorkbench()->getConfig()->getOption('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')) {
                 throw $e;
             }
+            
+            if (! $e instanceof ExceptionInterface){
+                $e = new InternalError($e->getMessage(), null, $e);
+            }
+            
             $this->setResponseFromError($e, $widget->getPage());
             $output = $this->getResponse();
         }
@@ -372,8 +379,11 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             try {
                 $this->getWorkbench()->ui()->setPageIdCurrent($called_in_resource_id);
                 $this->getWorkbench()->ui()->getPageCurrent();
-            } catch (ErrorExceptionInterface $e) {
+            } catch (\Throwable $e) {
                 if (! $disable_error_handling) {
+                    if (! $e instanceof ExceptionInterface){
+                        $e = new InternalError($e->getMessage(), null, $e);
+                    }
                     $this->setResponseFromError($e, UiPageFactory::createEmpty($this->getWorkbench()->ui()));
                     return $this->getResponse();
                 } else {
@@ -442,6 +452,9 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             $this->setResponseFromAction($action);
         } catch (ErrorExceptionInterface $e) {
             if (! $disable_error_handling && ! $this->getWorkbench()->getConfig()->getOption('DEBUG.DISABLE_TEMPLATE_ERROR_HANDLERS')) {
+                if (! $e instanceof ExceptionInterface){
+                    $e = new InternalError($e->getMessage(), null, $e);
+                }
                 $this->setResponseFromError($e, UiPageFactory::create($this->getWorkbench()->ui(), 0));
             } else {
                 throw $e;
@@ -498,9 +511,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
         }
         
-        $this->getWorkbench()->getLogger()->error($exception->getMessage(), array(
-            "id" => $exception->getId()
-        ), $exception);
+        $this->getWorkbench()->getLogger()->error($exception->getMessage(), array(), $exception);
         
         $this->setResponse($output);
         return $this;

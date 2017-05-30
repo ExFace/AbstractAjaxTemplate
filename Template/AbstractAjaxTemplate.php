@@ -561,7 +561,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         if (count($this->request_filters_array) == 0) {
             foreach ($this->getWorkbench()->getRequestParams() as $var => $val) {
                 if (strpos($var, 'fltr') === 0) {
-                    $this->request_filters_array[substr($var, 7)][] = urldecode($val);
+                    $this->request_filters_array[urldecode(substr($var, 7))][] = urldecode($val);
                     $this->getWorkbench()->removeRequestParam($var);
                 }
             }

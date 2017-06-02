@@ -64,9 +64,7 @@ trait JqueryLiveReferenceTrait {
                     case EXF_COMPARATOR_LESS_THAN_OR_EQUALS: // <=
                     case EXF_COMPARATOR_GREATER_THAN: // >
                     case EXF_COMPARATOR_GREATER_THAN_OR_EQUALS: // >=
-                        $enable_widget_script = $this->getWidget()->isDisabled() ? '' : $this->buildJsEnabler() . ';
-							// Sonst wird ein leeres required Widget nicht als invalide angezeigt
-							$("#' . $this->getId() . '").' . $this->getElementType() . '("validate");';
+                        $enable_widget_script = $this->getWidget()->isDisabled() ? '' : $this->buildJsEnabler() . ';';
                         
                         $output = <<<JS
 

@@ -4,6 +4,7 @@ namespace exface\AbstractAjaxTemplate\Template\Elements;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Actions\GoBack;
 use exface\Core\Widgets\Button;
+use exface\Core\Interfaces\Actions\iShowWidget;
 
 trait JqueryButtonTrait {
 
@@ -196,19 +197,33 @@ trait JqueryButtonTrait {
         return $output;
     }
 
-    protected function buildJsClickShowWidget(ActionInterface $action, AbstractJqueryElement $input_element)
+    protected function buildJsClickShowWidget(iShowWidget $action, AbstractJqueryElement $input_element)
     {
         $widget = $this->getWidget();
         $output = '';
+        $prefill_param = '';
+        $filters_param = '';
         if ($action->getPageId() != $this->getPageId()) {
-            $output = <<<JS
-				{$this->buildJsRequestDataCollector($action, $input_element)}
-				{$input_element->buildJsBusyIconShow()}
-				var prefillRows = [];
-				if (requestData.rows[0]["{$widget->getMetaObject()->getUidAlias()}"]){
-					prefillRows.push({{$widget->getMetaObject()->getUidAlias()}: requestData.rows[0]["{$widget->getMetaObject()->getUidAlias()}"]});
-				}
-			 	window.location.href = '{$this->getTemplate()->createLinkInternal($action->getPageId())}?prefill={"meta_object_id":"{$widget->getMetaObjectId()}","rows": ' + JSON.stringify(prefillRows) + '}';
+            if ($action->getPrefillWithPrefillData()){
+                $output = <<<JS
+    				{$this->buildJsRequestDataCollector($action, $input_element)}
+    				{$input_element->buildJsBusyIconShow()}
+    				var prefillRows = [];
+    				if (requestData.rows[0]["{$widget->getMetaObject()->getUidAlias()}"]){
+    					prefillRows.push({{$widget->getMetaObject()->getUidAlias()}: requestData.rows[0]["{$widget->getMetaObject()->getUidAlias()}"]});
+    				}
+JS;
+                $prefill_param = '&prefill={"meta_object_id":"'.$widget->getMetaObjectId().'","rows": \' + JSON.stringify(prefillRows) + \'}';
+            } 
+            
+            $filters_cnt = 0;
+            /* @var $widgetLink \exface\Core\CommonLogic\WidgetLink */
+            foreach ($action->getTakeAlongFilters() as $attributeAlias => $widgetLink){
+                $filters_param .= "&fltr" . str_pad($filters_cnt, 2, '0', STR_PAD_LEFT) . '_' . $attributeAlias . "='+" . $this->getTemplate()->getElement($widgetLink->getWidget())->buildJsValueGetter(null, $widgetLink->getColumnId()) . "+'";
+            }
+            
+            $output .= <<<JS
+            window.location.href = '{$this->getTemplate()->createLinkInternal($action->getPageId())}?{$prefill_param}{$filters_param}';
 JS;
         }
         return $output;

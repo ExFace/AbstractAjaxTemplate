@@ -511,7 +511,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             throw new RuntimeException('Failed to create error report widget: "' . $e->getMessage() . '"! See orignal error detail below.', null, $exception);
         }
         
-        $this->getWorkbench()->getLogger()->error($exception->getMessage(), array(), $exception);
+        $this->getWorkbench()->getLogger()->log($exception->getLogLevel(), $exception->getMessage(), array(), $exception);
         
         $this->setResponse($output);
         return $this;

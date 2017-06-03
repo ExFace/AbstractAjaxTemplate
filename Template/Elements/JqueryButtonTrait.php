@@ -5,6 +5,7 @@ use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Actions\GoBack;
 use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowWidget;
+use exface\Core\Actions\GoToPage;
 
 trait JqueryButtonTrait {
 
@@ -216,10 +217,12 @@ JS;
                 $prefill_param = '&prefill={"meta_object_id":"'.$widget->getMetaObjectId().'","rows": \' + JSON.stringify(prefillRows) + \'}';
             } 
             
-            $filters_cnt = 0;
-            /* @var $widgetLink \exface\Core\CommonLogic\WidgetLink */
-            foreach ($action->getTakeAlongFilters() as $attributeAlias => $widgetLink){
-                $filters_param .= "&fltr" . str_pad($filters_cnt, 2, '0', STR_PAD_LEFT) . '_' . $attributeAlias . "='+" . $this->getTemplate()->getElement($widgetLink->getWidget())->buildJsValueGetter(null, $widgetLink->getColumnId()) . "+'";
+            if ($action instanceof GoToPage){
+                $filters_cnt = 0;
+                /* @var $widgetLink \exface\Core\CommonLogic\WidgetLink */
+                foreach ($action->getTakeAlongFilters() as $attributeAlias => $widgetLink){
+                    $filters_param .= "&fltr" . str_pad($filters_cnt, 2, '0', STR_PAD_LEFT) . '_' . $attributeAlias . "='+" . $this->getTemplate()->getElement($widgetLink->getWidget())->buildJsValueGetter(null, $widgetLink->getColumnId()) . "+'";
+                }
             }
             
             $output .= <<<JS

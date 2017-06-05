@@ -11,10 +11,10 @@ trait JqueryButtonTrait {
 
     protected function buildJsInputRefresh(Button $widget, $input_element)
     {
-        $js = ($widget->getRefreshInput() && $input_element->buildJsRefresh() ? $input_element->buildJsRefresh() . ";" : "");
+        $js = ($widget->getRefreshInput() && $input_element->buildJsRefresh() ? $input_element->buildJsRefresh(true) . ";" : "");
         if ($link = $widget->getRefreshWidgetLink()) {
             if ($link->getPageId() == $widget->getPageId() && $linked_element = $this->getTemplate()->getElement($link->getWidget())) {
-                $js .= "\n" . $linked_element->buildJsRefresh();
+                $js .= "\n" . $linked_element->buildJsRefresh(true);
             }
         }
         return $js;

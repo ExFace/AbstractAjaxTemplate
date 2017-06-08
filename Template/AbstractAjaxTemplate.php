@@ -707,7 +707,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
     {
         $result = json_encode($serializable_data);
         if (! $result) {
-            throw new TemplateOutputError('Error encoding data: ' . json_last_error_msg());
+            throw new TemplateOutputError('Error encoding data: ' . json_last_error() . ' ' . json_last_error_msg());
         }
         return $result;
     }

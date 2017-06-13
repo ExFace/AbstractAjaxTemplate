@@ -500,6 +500,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         
         try {
             $debug_widget = $exception->createWidget($page);
+            if ($page->getWorkbench()->getConfig()->getOption('DEBUG.SHOW_ERROR_DETAILS_TO_ADMINS_ONLY') && ! $page->getWorkbench()->getCMS()->isUserAdmin()) {
+                foreach ($debug_widget->getTabs() as $nr => $tab) {
+                    if ($nr > 0) {
+                        $tab->setHidden(true);
+                    }
+                }
+            }
             $output = $this->drawHeaders($debug_widget) . "\n" . $this->draw($debug_widget);
         } catch (\Throwable $e) {
             // If anything goes wrong when trying to prettify the original error, drop prettifying
@@ -707,7 +714,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
     {
         $result = json_encode($serializable_data);
         if (! $result) {
-            throw new TemplateOutputError('Error encoding data: ' . json_last_error_msg());
+            throw new TemplateOutputError('Error encoding data: ' . json_last_error() . ' ' . json_last_error_msg());
         }
         return $result;
     }

@@ -19,6 +19,8 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
     private $template = null;
 
     private $width_relative_unit = null;
+    
+    private $width_minimum = null;
 
     private $width_default = null;
 
@@ -464,6 +466,19 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
         return $this->width_relative_unit;
     }
 
+    /**
+     * Returns the minimum width of one relative width unit in pixels
+     *
+     * @return \exface\Core\CommonLogic\multitype
+     */
+    public function getWidthMinimum()
+    {
+        if (is_null($this->width_minimum)) {
+            $this->width_minimum = $this->getTemplate()->getConfig()->getOption('WIDTH_MINIMUM');
+        }
+        return $this->width_minimum;
+    }
+    
     /**
      * Returns the height of one relative height unit in pixels
      *

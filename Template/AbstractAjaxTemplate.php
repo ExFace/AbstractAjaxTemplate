@@ -33,7 +33,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
 
     private $class_namespace = '';
 
-    protected $request_id = null;
+    protected $subrequest_id = null;
 
     protected $request_paging_offset = 0;
 
@@ -372,8 +372,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         $action_alias = $action_alias ? $action_alias : $this->getRequestActionAlias();
         
         $object_id = $this->getRequestObjectId();
-        if ($this->getRequestId())
-            $this->getWorkbench()->setRequestId($this->getRequestId());
+        if ($this->getSubrequestId())
+            $this->getWorkbench()->context()->getScopeRequest()->setSubrequestId($this->getSubrequestId());
         
         if ($called_in_resource_id) {
             try {
@@ -701,13 +701,13 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         return $this;
     }
 
-    public function getRequestId()
+    public function getSubrequestId()
     {
-        if (! $this->request_id) {
-            $this->request_id = urldecode($this->getWorkbench()->getRequestParams()['exfrid']);
+        if (! $this->subrequest_id) {
+            $this->subrequest_id = urldecode($this->getWorkbench()->getRequestParams()['exfrid']);
             $this->getWorkbench()->removeRequestParam('exfrid');
         }
-        return $this->request_id;
+        return $this->subrequest_id;
     }
 
     public function encodeData($serializable_data)

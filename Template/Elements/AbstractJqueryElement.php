@@ -373,7 +373,7 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
     {
         $dimension = $this->getWidget()->getWidth();
         if ($dimension->isRelative()) {
-            if ($dimension->getValue() != 'max') {
+            if (! $dimension->isMax()) {
                 $width = ($this->getWidthRelativeUnit() * $dimension->getValue()) . 'px';
             }
         } elseif ($dimension->isTemplateSpecific() || $dimension->isPercentual()) {

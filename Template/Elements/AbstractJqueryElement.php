@@ -10,6 +10,7 @@ use exface\Core\CommonLogic\Model\Object;
 use exface\Core\Interfaces\ExfaceClassInterface;
 use exface\Core\CommonLogic\Translation;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
+use exface\Core\Interfaces\Widgets\iLayoutWidgets;
 
 abstract class AbstractJqueryElement implements ExfaceClassInterface
 {
@@ -41,6 +42,10 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
     private $id = null;
 
     private $element_type = null;
+
+    private $number_of_columns = null;
+
+    private $searched_for_number_of_columns = false;
 
     /**
      * Creates a template element for a given widget
@@ -490,6 +495,46 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
             $this->height_relative_unit = $this->getTemplate()->getConfig()->getOption('HEIGHT_RELATIVE_UNIT');
         }
         return $this->height_relative_unit;
+    }
+
+    /**
+     * Determines the number of columns of a layout-widget, based on the width of widget, the
+     * number of columns of the parent layout-widget and the default number of columns of the
+     * widget.
+     *
+     * @return number
+     */
+    public function getNumberOfColumns()
+    {
+        if (! $this->searched_for_number_of_columns) {
+            $widget = $this->getWidget();
+            if ($widget instanceof iLayoutWidgets) {
+                if (! is_null($widget->getNumberOfColumns())) {
+                    $this->number_of_columns = $widget->getNumberOfColumns();
+                } elseif ($widget->getWidth()->isRelative() && ! $widget->getWidth()->isMax()) {
+                    $width = $widget->getWidth()->getValue();
+                    if ($width < 1) {
+                        $width = 1;
+                    }
+                    $this->number_of_columns = $width;
+                } else {
+                    if ($this->inheritsColumnNumber()) {
+                        if ($layoutWidget = $widget->getParentByType('exface\\Core\\Interfaces\\Widgets\\iLayoutWidgets')) {
+                            $parentColumnNumber = $this->getTemplate()->getElement($layoutWidget)->getNumberOfColumns();
+                        }
+                        if (! is_null($parentColumnNumber)) {
+                            $this->number_of_columns = $parentColumnNumber;
+                        } else {
+                            $this->number_of_columns = $this->getDefaultColumnNumber();
+                        }
+                    } else {
+                        $this->number_of_columns = $this->getDefaultColumnNumber();
+                    }
+                }
+            }
+            $this->searched_for_number_of_columns = true;
+        }
+        return $this->number_of_columns;
     }
 
     /**

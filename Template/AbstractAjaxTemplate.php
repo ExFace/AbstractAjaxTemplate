@@ -306,8 +306,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             $sort_by = $this->getRequestSortingSortBy();
             $order = $this->getRequestSortingDirection();
             if ($sort_by && $order) {
-                $sort_by = explode(EXF_LIST_SEPARATOR, $sort_by);
-                $order = explode(EXF_LIST_SEPARATOR, $order);
+                $sort_by = explode(',', $sort_by);
+                $order = explode(',', $order);
                 foreach ($sort_by as $nr => $sort) {
                     $data_sheet->getSorters()->addFromString($sort, $order[$nr]);
                 }
@@ -351,11 +351,6 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             }
         }
         return $result;
-    }
-
-    protected function splitConcatennatedUidValue($string)
-    {
-        return explode(EXF_LIST_SEPARATOR, $string);
     }
 
     /**

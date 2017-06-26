@@ -221,8 +221,8 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
         if (is_null($this->ajax_url)) {
             $this->ajax_url = $this->getTemplate()->getConfig()->getOption('DEFAULT_AJAX_URL');
         }
-        $request_id = $this->getTemplate()->getWorkbench()->getRequestId();
-        return $this->ajax_url . ($request_id ? '&exfrid=' . $request_id : '');
+        $subrequest_id = $this->getTemplate()->getWorkbench()->context()->getScopeRequest()->getSubrequestId();
+        return $this->ajax_url . ($subrequest_id ? '&exfrid=' . $subrequest_id : '');
     }
 
     /**
@@ -283,7 +283,8 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
     public function getId()
     {
         if (is_null($this->id)) {
-            $this->id = $this->cleanId($this->getWidget()->getId()) . ($this->getTemplate()->getWorkbench()->getRequestId() ? '_' . $this->getTemplate()->getWorkbench()->getRequestId() : '');
+            $subrequest = $this->getTemplate()->getWorkbench()->context()->getScopeRequest()->getSubrequestId();
+            $this->id = $this->cleanId($this->getWidget()->getId()) . ($subrequest ? '_' . $subrequest : '');
         }
         return $this->id;
     }

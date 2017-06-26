@@ -43,7 +43,7 @@ trait JqueryDataTablesTrait {
 			// This row is already open - close it
 			row.child.hide();
 			tr.removeClass('shown');
-			tr.find('.{$this->getRowDetailsCollapseIcon()}').removeClass('{$this->getRowDetailsCollapseIcon()}').addClass('{$this->getRowDetailsCollapseIcon()}');
+			tr.find('.{$this->getRowDetailsCollapseIcon()}').removeClass('{$this->getRowDetailsCollapseIcon()}').addClass('{$this->getRowDetailsExpandIcon()}');
 			$('#detail'+row.data().id).remove();
 			{$this->getId()}_table.columns.adjust();
 		}

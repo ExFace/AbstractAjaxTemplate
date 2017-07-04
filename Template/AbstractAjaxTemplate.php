@@ -477,7 +477,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             }
             // Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
             // there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)
-            $output = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
+            $output = $this->encodeData($response);
         }
         
         $this->setResponse($output);
@@ -705,13 +705,35 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         return $this->subrequest_id;
     }
 
-    public function encodeData($serializable_data)
+    public function encodeData($serializable_data, $add_extras = true)
     {
-        $result = json_encode($serializable_data);
+        if ($add_extras){
+            $serializable_data['extras'] = [
+                'ContextBar' => $this->buildResponseExtraForContextBar()
+            ];
+        }
+        
+        $result = json_encode($serializable_data, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT);
         if (! $result) {
             throw new TemplateOutputError('Error encoding data: ' . json_last_error() . ' ' . json_last_error_msg());
         }
         return $result;
+    }
+    
+    protected function buildResponseExtraForContextBar()
+    {
+        $extra = [];
+        $contextBar = $this->getWorkbench()->ui()->getPageCurrent()->getContextBar();
+        foreach ($contextBar->getButtons() as $btn){
+            $btn_element = $this->getElement($btn);
+            $extra[$btn->getId()] = [
+                'visibility' => $btn->getVisibility(),
+                'icon' => $btn_element->buildCssIconClass($btn->getIconName()),
+                'hint' => $btn->getHint(),
+                'indicator' => $contextBar->getContextForButton($btn)->getIndicator()
+            ];
+        }
+        return $extra;
     }
 }
 ?>

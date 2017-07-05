@@ -404,7 +404,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
                 }
                 if (! $object_id && $widget)
                     $object_id = $widget->getMetaObject()->getId();
-                if ($widget instanceof iTriggerAction && (! $action_alias || strtolower($action_alias) == strtolower($widget->getAction()->getAliasWithNamespace()))) {
+                if ($widget instanceof iTriggerAction && (! $action_alias || ($widget->getAction() && strcasecmp($action_alias, $widget->getAction()->getAliasWithNamespace()) === 0))) {
                     $action = $widget->getAction();
                 }
             }

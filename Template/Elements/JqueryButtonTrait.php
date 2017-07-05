@@ -168,7 +168,7 @@ trait JqueryButtonTrait {
 										" . $this->buildJsCloseDialog($widget, $input_element) . "
 										" . $this->buildJsInputRefresh($widget, $input_element) . "
 				                       	" . $this->buildJsBusyIconHide() . "
-				                       	$(document).trigger('" . $action->getAliasWithNamespace() . ".action.performed', [requestData]);
+				                       	$('#" . $this->getId() . "').trigger('" . $action->getAliasWithNamespace() . ".action.performed', [requestData, '" . $input_element->getId() . "']);
 										if (response.success || response.undoURL){
 				                       		" . $this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
 											if(response.redirect){

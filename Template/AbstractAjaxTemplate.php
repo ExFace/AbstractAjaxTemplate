@@ -728,11 +728,12 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             $contextBar = $this->getWorkbench()->ui()->getPageCurrent()->getContextBar();
             foreach ($contextBar->getButtons() as $btn){
                 $btn_element = $this->getElement($btn);
-                $extra[$btn->getId()] = [
+                $extra[$btn_element->getId()] = [
                     'visibility' => $btn->getVisibility(),
                     'icon' => $btn_element->buildCssIconClass($btn->getIconName()),
                     'hint' => $btn->getHint(),
-                    'indicator' => $contextBar->getContextForButton($btn)->getIndicator()
+                    'indicator' => $contextBar->getContextForButton($btn)->getIndicator(),
+                    'bar_widget_id' => $btn->getId()
                 ];
             }
         } catch (ExceptionInterface $e){

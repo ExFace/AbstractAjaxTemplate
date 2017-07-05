@@ -736,9 +736,9 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
                 ];
             }
         } catch (ExceptionInterface $e){
-            $this->getWorkbench()->getLogger()->error($e->getMessage(), [], $e);
+            $this->getWorkbench()->getLogger()->alert($e->getMessage(), [], $e);
         } catch (\Throwable $e){
-            $this->getWorkbench()->getLogger()->error($e->getMessage(), ["exception" => $e]);
+            $this->getWorkbench()->getLogger()->alert($e->getMessage(), ["exception" => $e]);
         }
         return $extra;
     }

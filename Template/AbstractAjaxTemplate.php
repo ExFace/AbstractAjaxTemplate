@@ -23,6 +23,7 @@ use exface\Core\Exceptions\Templates\TemplateRequestParsingError;
 use exface\Core\Events\WidgetEvent;
 use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 use exface\Core\Exceptions\InternalError;
+use exface\Core\Interfaces\Log\LoggerInterface;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate
 {
@@ -723,15 +724,21 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
     protected function buildResponseExtraForContextBar()
     {
         $extra = [];
-        $contextBar = $this->getWorkbench()->ui()->getPageCurrent()->getContextBar();
-        foreach ($contextBar->getButtons() as $btn){
-            $btn_element = $this->getElement($btn);
-            $extra[$btn->getId()] = [
-                'visibility' => $btn->getVisibility(),
-                'icon' => $btn_element->buildCssIconClass($btn->getIconName()),
-                'hint' => $btn->getHint(),
-                'indicator' => $contextBar->getContextForButton($btn)->getIndicator()
-            ];
+        try {
+            $contextBar = $this->getWorkbench()->ui()->getPageCurrent()->getContextBar();
+            foreach ($contextBar->getButtons() as $btn){
+                $btn_element = $this->getElement($btn);
+                $extra[$btn->getId()] = [
+                    'visibility' => $btn->getVisibility(),
+                    'icon' => $btn_element->buildCssIconClass($btn->getIconName()),
+                    'hint' => $btn->getHint(),
+                    'indicator' => $contextBar->getContextForButton($btn)->getIndicator()
+                ];
+            }
+        } catch (ExceptionInterface $e){
+            $this->getWorkbench()->getLogger()->error($e->getMessage(), [], $e);
+        } catch (\Throwable $e){
+            $this->getWorkbench()->getLogger()->error($e->getMessage(), ["exception" => $e]);
         }
         return $extra;
     }

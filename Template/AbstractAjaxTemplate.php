@@ -721,7 +721,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         return $result;
     }
     
-    protected function buildResponseExtraForContextBar()
+    public function buildResponseExtraForContextBar()
     {
         $extra = [];
         try {

@@ -496,7 +496,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         
         try {
             $debug_widget = $exception->createWidget($page);
-            if ($page->getWorkbench()->getConfig()->getOption('DEBUG.SHOW_ERROR_DETAILS_TO_ADMINS_ONLY') && ! $page->getWorkbench()->getCMS()->isUserAdmin()) {
+            if ($page->getWorkbench()->getConfig()->getOption('DEBUG.SHOW_ERROR_DETAILS_TO_ADMINS_ONLY') && ! $page->getWorkbench()->context()->getScopeUser()->isUserAdmin()) {
                 foreach ($debug_widget->getTabs() as $nr => $tab) {
                     if ($nr > 0) {
                         $tab->setHidden(true);
@@ -736,10 +736,8 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
                     'bar_widget_id' => $btn->getId()
                 ];
             }
-        } catch (ExceptionInterface $e){
-            $this->getWorkbench()->getLogger()->alert($e->getMessage(), [], $e);
         } catch (\Throwable $e){
-            $this->getWorkbench()->getLogger()->alert($e->getMessage(), ["exception" => $e]);
+            $this->getWorkbench()->getLogger()->logException($e);
         }
         return $extra;
     }

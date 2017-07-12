@@ -221,12 +221,13 @@ JS;
                 $filters_cnt = 0;
                 /* @var $widgetLink \exface\Core\CommonLogic\WidgetLink */
                 foreach ($action->getTakeAlongFilters() as $attributeAlias => $widgetLink){
-                    $filters_param .= "&fltr" . str_pad($filters_cnt, 2, '0', STR_PAD_LEFT) . '_' . $attributeAlias . "='+" . $this->getTemplate()->getElement($widgetLink->getWidget())->buildJsValueGetter(null, $widgetLink->getColumnId()) . "+'";
+                    $filters_param .= "&fltr" . str_pad($filters_cnt, 2, '0', STR_PAD_LEFT) . '_' . $attributeAlias . "='+" . $this->getTemplate()->getElement($widgetLink->getWidget())->buildJsValueGetter($widgetLink->getColumnId(), null) . "+'";
                 }
             }
             
             $output .= <<<JS
-            window.location.href = '{$this->getTemplate()->createLinkInternal($action->getPageId())}?{$prefill_param}{$filters_param}';
+            {$input_element->buildJsBusyIconShow()}
+			window.location.href = '{$this->getTemplate()->createLinkInternal($action->getPageId())}?{$prefill_param}{$filters_param}';
 JS;
         }
         return $output;

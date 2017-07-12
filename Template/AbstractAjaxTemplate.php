@@ -732,7 +732,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
                     'visibility' => $btn->getVisibility(),
                     'icon' => $btn_element->buildCssIconClass($btn->getIconName()),
                     'hint' => $btn->getHint(),
-                    'indicator' => $contextBar->getContextForButton($btn)->getIndicator(),
+                    'indicator' => ! is_null($contextBar->getContextForButton($btn)->getIndicator()) ? $contextBar->getContextForButton($btn)->getIndicator() : '',
                     'bar_widget_id' => $btn->getId()
                 ];
             }

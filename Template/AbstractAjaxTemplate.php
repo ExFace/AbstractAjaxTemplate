@@ -24,6 +24,7 @@ use exface\Core\Events\WidgetEvent;
 use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 use exface\Core\Exceptions\InternalError;
 use exface\Core\Interfaces\Log\LoggerInterface;
+use exface\Core\Interfaces\Actions\iModifyContext;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate
 {
@@ -478,7 +479,7 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             }
             // Encode the response object to JSON converting <, > and " to HEX-values (e.g. \u003C). Without that conversion
             // there might be trouble with HTML in the responses (e.g. jEasyUI will break it when parsing the response)
-            $output = $this->encodeData($response);
+            $output = $this->encodeData($response, $action instanceof iModifyContext ? true : false);
         }
         
         $this->setResponse($output);
@@ -705,8 +706,15 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         }
         return $this->subrequest_id;
     }
-
-    public function encodeData($serializable_data, $add_extras = true)
+    
+    /**
+     * 
+     * @param unknown $serializable_data
+     * @param string $add_extras
+     * @throws TemplateOutputError
+     * @return string
+     */
+    public function encodeData($serializable_data, $add_extras = false)
     {
         if ($add_extras){
             $serializable_data['extras'] = [

@@ -14,5 +14,13 @@
 	},
 	"require" : {
 		"exface/core" : "~0.1"
-	}
+	},
+    "autoload": {
+        "psr-4": { "exface\\AbstractAjaxTemplate\\": "" },
+        "exclude-from-classmap": [
+            "/Config/",
+            "/Translations/",
+            "/Model/"
+        ]
+    }
 }

@@ -6,6 +6,7 @@ use exface\Core\Actions\GoBack;
 use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\Core\Actions\GoToPage;
+use exface\Core\Actions\RefreshWidget;
 
 trait JqueryButtonTrait {
 
@@ -111,7 +112,7 @@ trait JqueryButtonTrait {
     {
         $output = '';
         $widget = $this->getWidget();
-        $input_element = $this->getTemplate()->getElement($widget->getInputWidget(), $this->getPageId());
+        $input_element = $this->getInputElement();
         
         $action = $widget->getAction();
         
@@ -122,7 +123,9 @@ trait JqueryButtonTrait {
             return $output;
         }
         
-        if ($action->implementsInterface('iRunTemplateScript')) {
+        if ($action instanceof RefreshWidget) {
+            $output = $this->buildJsClickRefreshWidget($action, $input_element);
+        } elseif ($action->implementsInterface('iRunTemplateScript')) {
             $output = $this->buildJsClickRunTemplateScript($action, $input_element);
         } elseif ($action->implementsInterface('iShowDialog')) {
             $output = $this->buildJsClickShowDialog($action, $input_element);
@@ -262,6 +265,15 @@ JS;
         
         return $output;
     }
+    
+    protected function buildJsClickRefreshWidget(ActionInterface $action, AbstractJqueryElement $input_element)
+    {
+        $output = $input_element->buildJsRefresh();
+        $output .= '
+				' . $this->buildJsCloseDialog($this->getWidget(), $input_element);
+        
+        return $output;
+    }
 
     protected function buildJsUndoUrl(ActionInterface $action, AbstractJqueryElement $input_element)
     {
@@ -270,6 +282,14 @@ JS;
             $undo_url = $this->getAjaxUrl() . "&action=exface.Core.UndoAction&resource=" . $widget->getPageId() . "&element=" . $widget->getId();
         }
         return $undo_url;
+    }
+    
+    /**
+     * Return the template element corresponding to the input widget of this button
+     */
+    public function getInputElement()
+    {
+        return $this->getTemplate()->getElement($this->getWidget()->getInputWidget());
     }
 }
 ?>

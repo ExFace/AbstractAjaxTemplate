@@ -1,6 +1,16 @@
 <?php
 namespace exface\AbstractAjaxTemplate\Template\Elements;
 
+use exface\Core\Interfaces\Widgets\iHaveToolbars;
+
+/**
+ * TODO use template elements for Toolbar and ButtonGroup instead of this trait.
+ * 
+ * @method iHaveToolbars getWidget()
+ * 
+ * @author Andrej Kabachnik
+ *
+ */
 trait JqueryToolbarsTrait 
 {
     /** @var MenuButton */
@@ -41,23 +51,35 @@ trait JqueryToolbarsTrait
         $more_buttons_menu = $this->getMoreButtonsMenu();
         
         if ($widget->hasButtons()) {
-            foreach ($widget->getToolbarMain()->getButtonGroupMain()->getButtons() as $button) {
-                // Make pomoted and regular buttons visible right in the bottom toolbar
-                // Hidden buttons also go here, because it does not make sense to put them into the menu
-                if ($button->getVisibility() !== EXF_WIDGET_VISIBILITY_OPTIONAL || $button->isHidden()) {
-                    $button_html .= $this->getTemplate()->generateHtml($button);
+            foreach ($widget->getToolbarMain()->getButtonGroups() as $btn_group){
+                if ($btn_group->getVisibility() === EXF_WIDGET_VISIBILITY_OPTIONAL){
+                    $more_buttons_menu->getMenu()->addButtonGroup($btn_group);
+                } else {
+                    $button_html .= '<div style="' . ($btn_group->getAlign() === EXF_ALIGN_RIGHT || $btn_group->getAlign() === EXF_ALIGN_OPPOSITE ? 'float: right' : 'float: left') . '" class="exf-btn-group">';
+                    
+                    foreach ($btn_group->getButtons() as $button) {
+                        // Make pomoted and regular buttons visible right in the bottom toolbar
+                        // Hidden buttons also go here, because it does not make sense to put them into the menu
+                        if ($button->getVisibility() !== EXF_WIDGET_VISIBILITY_OPTIONAL || $button->isHidden()) {
+                            $button_html .= $this->getTemplate()->generateHtml($button);
+                        }
+                        
+                        // Put optional buttons in the menu
+                        if ($button->getVisibility() == EXF_WIDGET_VISIBILITY_OPTIONAL && ! $button->isHidden()) {
+                            $more_buttons_menu->addButton($button);
+                        }
+                    }
+                    
+                    $button_html .= '</div>';
                 }
-                
-                // Put optional buttons in the menu
-                if ($button->getVisibility() == EXF_WIDGET_VISIBILITY_OPTIONAL && ! $button->isHidden()) {
-                    $more_buttons_menu->addButton($button);
-                }
-                
-            }
+            } 
             
             foreach ($widget->getToolbars() as $toolbar){
+                if ($toolbar === $widget->getToolbarMain()){
+                    continue;
+                }
                 foreach ($toolbar->getButtonGroups() as $btn_group){
-                    if ($btn_group !== $widget->getToolbarMain()->getButtonGroupMain() && $btn_group->hasButtons()){
+                    if ($btn_group->hasButtons()){
                         $more_buttons_menu->getMenu()->addButtonGroup($btn_group);
                     }
                 }

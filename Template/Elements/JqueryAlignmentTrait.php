@@ -6,22 +6,19 @@ trait JqueryAlignmentTrait {
     /**
      * Calculates the value of the CSS attribute text-align based on the align property of the widget.
      * 
+     * @param string $widget_align
+     * @param string $default_alignment
+     * 
      * @return string
      */
-    public function buildCssTextAlignValue()
-    {
-        $align = $this->getWidget()->getAlign();
-        
-        if ($align === EXF_ALIGN_DEFAULT || $align === EXF_ALIGN_OPPOSITE){
-            $input_element = $this->getInputElement();
-            
-            if (method_exists($input_element, 'getDefaultButtonAlignment')){
-                $default_alignment = $input_element->getDefaultButtonAlignment();
-            } else {
-                $default_alignment = $this->getTemplate()->getConfig()->getOption('WIDGET.ALL.DEFAULT_BUTTON_ALIGNMENT');
+    public function buildCssTextAlignValue($widget_align, $default_alignment = null)
+    {        
+        if ($widget_align === EXF_ALIGN_DEFAULT || $widget_align === EXF_ALIGN_OPPOSITE){
+            if (is_null($default_alignment)){
+                $default_alignment = $this->getTemplate()->getConfig()->getOption('WIDGET.ALL.DEFAULT_ALIGNMENT');
             }
             
-            if ($align === EXF_ALIGN_DEFAULT){
+            if ($widget_align === EXF_ALIGN_DEFAULT){
                 return $default_alignment;
             } elseif ($default_alignment === EXF_ALIGN_LEFT){
                 return EXF_ALIGN_RIGHT;
@@ -30,7 +27,7 @@ trait JqueryAlignmentTrait {
             }
         }
         
-        return $align;
+        return $widget_align;
     }
 }
 ?>

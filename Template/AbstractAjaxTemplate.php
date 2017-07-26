@@ -249,10 +249,17 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
                     $this->getWorkbench()->setRequestParam('data', $decoded);
                 }
                 $request_data = $this->getWorkbench()->getRequestParams()['data'];
+                // If there is a data request parameter, create a data sheet from it
                 if (is_array($request_data) && $request_data['oId']) {
-                    $data_sheet = DataSheetFactory::createFromObjectIdOrAlias($this->getWorkbench(), $request_data['oId']);
+                    // Remove rows as they may need to be split a few lines later
                     if (is_array($request_data['rows'])) {
                         $rows = $request_data['rows'];
+                        unset($request_data['rows']);
+                    }
+                    // Create a data sheet from the JSON passed via data parameter
+                    $data_sheet = DataSheetFactory::createFromUxon($this->getWorkbench(), UxonObject::fromArray($request_data));
+                    // Now take care of the rows, we split off before
+                    if ($rows) {
                         // If there is only one row and it has a UID column, check if the only UID cell has a concatennated value
                         if (count($rows) == 1) {
                             $rows = $this->splitRowsByMultivalueFields($rows, $data_sheet);
@@ -285,9 +292,9 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
             }
             
             /* @var $data_sheet \exface\Core\CommonLogic\DataSheets\DataSheet */
-            if (! $data_sheet) {
+            if (! $data_sheet || $data_sheet->isEmpty()) {
                 if ($widget) {
-                    $data_sheet = $widget->prepareDataSheetToRead();
+                    $data_sheet = $widget->prepareDataSheetToRead($data_sheet);
                 } elseif ($object_id) {
                     $data_sheet = $this->getWorkbench()->data()->createDataSheet($this->getWorkbench()->model()->getObject($object_id));
                 } else {

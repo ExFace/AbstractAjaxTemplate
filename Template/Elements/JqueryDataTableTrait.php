@@ -13,6 +13,10 @@ use exface\Core\Widgets\DataTable;
  *        
  */
 trait JqueryDataTableTrait {
+    
+    private $editable = false;
+    
+    private $editors = [];
 
     /**
      * Builds an anonymous JS function returning the JSON representation of the condition group in the filters of the DataTable.
@@ -35,6 +39,21 @@ trait JqueryDataTableTrait {
 				}';
         }
         return 'function(){' . $detail_filters_js . ' return filters;}()';
+    }
+    
+    public function isEditable()
+    {
+        return $this->editable;
+    }
+    
+    public function setEditable($value)
+    {
+        $this->editable = $value;
+    }
+    
+    public function getEditors()
+    {
+        return $this->editors;
     }
 }
 ?>

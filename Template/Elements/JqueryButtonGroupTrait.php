@@ -66,6 +66,7 @@ trait JqueryButtonGroupTrait
             } else {
                 $this->more_buttons_menu->setIconName($icon);
             }
+            $widget->addButton($this->more_buttons_menu);
         }
         return $this->more_buttons_menu;
     }
@@ -98,6 +99,10 @@ trait JqueryButtonGroupTrait
                 $btns = array_reverse($btns);
             }
             foreach ($btns as $button) {
+                // Skip the more buttons menu here, as it will be added at the end if not empty
+                if ($button === $this->getMoreButtonsMenu()){
+                   continue;
+                }
                 // Generate HTML for every button except hidden and optional ones
                 // Optional buttons were already placed in the more-buttons-menu in init()
                 if ($button->getVisibility() !== EXF_WIDGET_VISIBILITY_OPTIONAL || $button->isHidden()) {

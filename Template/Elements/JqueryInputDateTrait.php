@@ -155,6 +155,7 @@ trait JqueryInputDateTrait {
         if (dateParsed) {
             var output = new Date(yyyy, MM, dd);
             {$this->getId()}_jquery.data("_internalValue", output.toString("{$this->buildJsDateFormatInternal()}"));
+            {$this->getId()}_jquery.data("_isValid", true);
             return output;
         }
         
@@ -203,9 +204,11 @@ trait JqueryInputDateTrait {
         // Ausgabe des geparsten Wertes
         if (dateParsed) {
             {$this->getId()}_jquery.data("_internalValue", output.toString("{$this->buildJsDateFormatInternal()}"));
+            {$this->getId()}_jquery.data("_isValid", true);
             return output;
         } else {
             {$this->getId()}_jquery.data("_internalValue", "");
+            {$this->getId()}_jquery.data("_isValid", false);
             return null;
         }
     }

@@ -68,7 +68,7 @@ trait JqueryInputDateTrait {
         
         return 'date.min.js';
     }
-    
+
     protected function buildJsDateParser()
     {
         // IDEA: Der Code des Parsers wird noch hier erzeugt und steht nicht an einer
@@ -84,10 +84,10 @@ trait JqueryInputDateTrait {
         // Auch moeglich: stattdessen Verwendung des DateJs-Parsers
         // date wird entsprechend CultureInfo geparst, hierfuer muss das entsprechende locale
         // DateJs eingebunden werden und ein kompatibler Formatter verwendet werden
-        //return Date.parse(date);
+        // return Date.parse(date);
         $output = <<<JS
 
-    function {$this->getId()}_dateParser(date) {
+    function {$this->buildJsFunctionPrefix()}dateParser(date) {
         // date ist ein String und wird zu einem date-Objekt geparst
         
         // Variablen initialisieren

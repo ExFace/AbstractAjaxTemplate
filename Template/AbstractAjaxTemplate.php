@@ -25,6 +25,7 @@ use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 use exface\Core\Exceptions\InternalError;
 use exface\Core\Interfaces\Log\LoggerInterface;
 use exface\Core\Interfaces\Actions\iModifyContext;
+use exface\Core\Exceptions\Model\MetaAttributeNotFoundError;
 
 abstract class AbstractAjaxTemplate extends AbstractTemplate
 {
@@ -333,7 +334,20 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
     }
 
     /**
+     * This method takes care of single-row data, that has columns with delimited 
+     * lists or arrays.
      *
+     * If there are multiple rows, they will be returned as is. In case of a
+     * single row, it will be split if it contains values for valid attributes, 
+     * that
+     * - are arrays or
+     * - represent attributes, that are UIDs of their object or relations and
+     *   contain the value list delimiter of their respective attribute.
+     *   
+     * Splitting a row will result in as many rows as separate values were found,
+     * each containing one of the split values and the same set of values in all
+     * other columns.
+     * 
      * @param array $rows            
      * @param DataSheetInterface $data_sheet            
      * @return array
@@ -344,13 +358,23 @@ abstract class AbstractAjaxTemplate extends AbstractTemplate
         if (count($rows) == 1) {
             $row = reset($rows);
             foreach ($row as $field => $val) {
+                if ($data_sheet->getMetaObject()->hasAttribute($field)){
+                    $attr = $data_sheet->getMetaObject()->getAttribute($field);
+                    if (is_string($val) && ($attr->isUidForObject() || $attr->isRelation())){
+                        $delim = $attr->getValueListDelimiter();
+                        if (strpos($val, $delim)){
+                            $val = explode($delim, $val);
+                        }
+                    }
+                }
                 if (is_array($val)) {
-                    if ($data_sheet->getMetaObject()->hasAttribute($field)) {
-                        foreach ($val as $i => $v) {
-                            foreach ($rows as $nr => $r) {
-                                $new_nr = $nr + ($nr * $i + $i);
-                                $result[$new_nr] = $r;
-                                $result[$new_nr][$field] = $v;
+                    if ($attr || $data_sheet->getMetaObject()->hasAttribute($field)) {
+                        $result_before = $result;
+                        foreach ($result_before as $nr => $r){
+                            unset($result[$nr]);
+                            $result = array_values($result);
+                            foreach ($val as $v) {
+                                $result[] = array_merge($r, [$field => $v]);
                             }
                         }
                     } else {

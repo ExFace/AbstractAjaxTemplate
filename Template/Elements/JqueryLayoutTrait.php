@@ -10,6 +10,6 @@ trait JqueryLayoutTrait {
      */
     public function buildJsLayouter()
     {
-        return $this->getId() . '_layouter()';
+        return $this->buildJsFunctionPrefix() . 'layouter()';
     }
 }

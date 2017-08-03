@@ -317,9 +317,11 @@ abstract class AbstractJqueryElement implements ExfaceClassInterface
     }
 
     /**
-     * Returns the JS method to be called to get the current value of the widget: e.g.
-     * val() for simple inputs. Use this if your script
-     * needs to specifiy an element id explicitly - otherwise go for build_js_value_getter() which includes the id of the element.
+     * Returns the JS method to be called to get the current value of the widget: e.g. val() for simple inputs. 
+     * 
+     * Use this if your script needs to specifiy an element id explicitly - 
+     * otherwise go for build_js_value_getter() which includes the id of the 
+     * element.
      *
      * @see build_js_value_getter()
      * @return string

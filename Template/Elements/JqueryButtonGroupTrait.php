@@ -32,6 +32,8 @@ trait JqueryButtonGroupTrait
     
     protected function init()
     {
+        $widget = $this->getWidget();
+        
         // Put optional buttons in the menu
         // NOTE: this separation of optional buttons must be done here because
         // after the button group had been initialized, other groups could add
@@ -40,9 +42,10 @@ trait JqueryButtonGroupTrait
         // buildHtmlButtons will traverse buttons differently depending on the
         // alignment of the group - this should not have an effect on the menu
         // thogh.
-        foreach ($this->getWidget()->getButtons() as $button) {      
+        foreach ($widget->getButtons() as $button) {      
             if ($button->getVisibility() == EXF_WIDGET_VISIBILITY_OPTIONAL && ! $button->isHidden()) {
                 $this->getMoreButtonsMenu()->addButton($button);
+                $widget->removeButton($button);
             }
         }
     }

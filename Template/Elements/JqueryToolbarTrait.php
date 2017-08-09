@@ -22,7 +22,7 @@ trait JqueryToolbarTrait
     protected function init()
     {
         $toolbar = $this->getWidget();
-        // See if the toolbar has completely optional button groups, which would
+        // See if the toolbar has only optional button groups, which would
         // only produce a menu button. If so, we could potentially have multiple
         // menu buttons next to each other without any difference. To avoid this,
         // we will append optional button groups to the preceding visible button

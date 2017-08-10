@@ -112,8 +112,13 @@ trait JqueryButtonGroupTrait
                 }
                 // Generate HTML for every button except hidden and optional ones
                 // Optional buttons were already placed in the more-buttons-menu in init()
-                if ($button->getVisibility() !== EXF_WIDGET_VISIBILITY_OPTIONAL || $button->isHidden()) {
-                    $button_html .= $this->getTemplate()->generateHtml($button);
+                if (! $button->isHidden()) {
+                    if ($button->getVisibility() !== EXF_WIDGET_VISIBILITY_OPTIONAL){
+                        $button_html .= $this->getTemplate()->generateHtml($button);
+                    } else {
+                        $this->getMoreButtonsMenu()->addButton($button);
+                        $widget->removeButton($button);
+                    }
                 }
             }
         }

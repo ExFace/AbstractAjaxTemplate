@@ -55,7 +55,7 @@ trait JqueryFilterTrait {
 
     public function getInputElement()
     {
-        return $this->getTemplate()->getElement($this->getWidget()->getWidget());
+        return $this->getTemplate()->getElement($this->getWidget()->getInputWidget());
     }
 
     /**

@@ -38,7 +38,11 @@ trait JqueryToolbarTrait
                 // have an alignment at all.
                 do {
                     $grp_idx--;
-                    $prev_grp = $toolbar->getButtonGroup($grp_idx);
+                    try {
+                        $prev_grp = $toolbar->getButtonGroup($grp_idx);
+                    } catch (\exface\Core\Exceptions\Widgets\WidgetChildNotFoundError $e){
+                        $prev_grp = null;
+                    }
                 } while (
                     !is_null($prev_grp) 
                     && !is_null($grp->getAlign()) 
@@ -54,6 +58,8 @@ trait JqueryToolbarTrait
                     $toolbar->removeButtonGroup($grp);
                     $this->getTemplate()->getElement($prev_grp)->getMoreButtonsMenu()->getMenu()->addButtonGroup($grp);
                 }
+            } else {
+                $this->getTemplate()->getElement($grp)->moveButtonsToMoreButtonsMenu(EXF_WIDGET_VISIBILITY_OPTIONAL, EXF_WIDGET_VISIBILITY_OPTIONAL);
             }
         }
         return;

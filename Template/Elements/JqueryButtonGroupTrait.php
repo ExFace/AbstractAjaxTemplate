@@ -30,30 +30,34 @@ trait JqueryButtonGroupTrait
     /** @var MenuButton */
     private $more_buttons_menu = null;
     
-    protected function init()
+    /**
+     * Moves buttons matching the given visibility range to the dropdown-menu
+     * at the end of the button group. 
+     * 
+     * Using this method you can make the button group only show promoted 
+     * buttons right away and put all the other buttons into a menu.
+     * 
+     * @param integer $min_visibility
+     * @param integer $max_visibility
+     * 
+     * @return AbstractJqueryElement
+     */
+    public function moveButtonsToMoreButtonsMenu($min_visibility, $max_visibility)
     {
         $widget = $this->getWidget();
         
-        // Put optional buttons in the menu
-        // NOTE: this separation of optional buttons must be done here because
-        // after the button group had been initialized, other groups could add
-        // buttons to the menu (see JquerToolbarTrait) and these "external"
-        // buttons must be placed after the own ones. Another reason is that
-        // buildHtmlButtons will traverse buttons differently depending on the
-        // alignment of the group - this should not have an effect on the menu
-        // thogh.
-        foreach ($widget->getButtons() as $button) {      
-            if ($button->getVisibility() == EXF_WIDGET_VISIBILITY_OPTIONAL && ! $button->isHidden()) {
+        foreach ($widget->getButtons() as $button) {
+            if ($button->getVisibility() >= $min_visibility && $button->getVisibility() <= $max_visibility) {
                 $this->getMoreButtonsMenu()->addButton($button);
                 $widget->removeButton($button);
             }
         }
+        
+        return $this;
     }
     
     /**
      * Returns a MenuButton to house buttons that did not fit into the main toolbar.
-     * 
-     * TODO An optional button group should be rendered as a MenuButton itself.
      *
      * @return MenuButton
      */

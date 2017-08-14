@@ -94,65 +94,74 @@ trait JqueryInputDateTrait {
         var {$this->getId()}_jquery = $("#{$this->getId()}");
         var match = null;
         var dateParsed = false;
+        var dateValid = false;
         
         // dd.MM.yyyy, dd-MM-yyyy, dd/MM/yyyy, d.M.yyyy, d-M-yyyy, d/M/yyyy
         if (!dateParsed && (match = /(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/.exec(date)) != null) {
             var yyyy = Number(match[3]);
             var MM = Number(match[2]) - 1;
             var dd = Number(match[1]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // yyyy.MM.dd, yyyy-MM-dd, yyyy/MM/dd, yyyy.M.d, yyyy-M-d, yyyy/M/d
         if (!dateParsed && (match = /(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})/.exec(date)) != null) {
             var yyyy = Number(match[1]);
             var MM = Number(match[2]) - 1;
             var dd = Number(match[3]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // dd.MM.yy, dd-MM-yy, dd/MM/yy, d.M.yy, d-M-yy, d/M/yy
         if (!dateParsed && (match = /(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{2})/.exec(date)) != null) {
             var yyyy = 2000 + Number(match[3]);
             var MM = Number(match[2]) - 1;
             var dd = Number(match[1]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // yy.MM.dd, yy-MM-dd, yy/MM/dd, yy.M.d, yy-M-d, yy/M/d
         if (!dateParsed && (match = /(\d{2})[.\-/](\d{1,2})[.\-/](\d{1,2})/.exec(date)) != null) {
             var yyyy = 2000 + Number(match[1]);
             var MM = Number(match[2]) - 1;
             var dd = Number(match[3]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // dd.MM, dd-MM, dd/MM, d.M, d-M, d/M
         if (!dateParsed && (match = /(\d{1,2})[.\-/](\d{1,2})/.exec(date)) != null) {
             var yyyy = (new Date()).getFullYear();
             var MM = Number(match[2]) - 1;
             var dd = Number(match[1]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // ddMMyyyy
         if (!dateParsed && (match = /^(\d{2})(\d{2})(\d{4})$/.exec(date)) != null) {
             var yyyy = Number(match[3]);
             var MM = Number(match[2]) - 1;
             var dd = Number(match[1]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // ddMMyy
         if (!dateParsed && (match = /^(\d{2})(\d{2})(\d{2})$/.exec(date)) != null) {
             var yyyy = 2000 + Number(match[3]);
             var MM = Number(match[2]) - 1;
             var dd = Number(match[1]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // ddMM
         if (!dateParsed && (match = /^(\d{2})(\d{2})$/.exec(date)) != null) {
             var yyyy = (new Date()).getFullYear();
             var MM = Number(match[2]) - 1;
             var dd = Number(match[1]);
-            dateParsed = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
+            dateParsed = true;
+            dateValid = Date.validateYear(yyyy) && Date.validateMonth(MM) && Date.validateDay(dd, yyyy, MM);
         }
         // Ausgabe des geparsten Wertes
-        if (dateParsed) {
+        if (dateParsed && dateValid) {
             var output = new Date(yyyy, MM, dd);
             {$this->getId()}_jquery.data("_internalValue", output.toString("{$this->buildJsDateFormatInternal()}"));
             {$this->getId()}_jquery.data("_isValid", true);
@@ -179,6 +188,7 @@ trait JqueryInputDateTrait {
                     output.addYears(Number(match[1]));
             }
             dateParsed = true;
+            dateValid = true;
         }
         // TODAY, HEUTE, NOW, JETZT, YESTERDAY, GESTERN, TOMORROW, MORGEN
         if (!dateParsed) {
@@ -189,20 +199,23 @@ trait JqueryInputDateTrait {
                 case "JETZT":
                     var output = Date.today();
                     dateParsed = true;
+                    dateValid = true;
                     break;
                 case "YESTERDAY":
                 case "GESTERN":
                     var output = Date.today().addDays(-1);
                     dateParsed = true;
+                    dateValid = true;
                     break;
                 case "TOMORROW":
                 case "MORGEN":
                     var output = Date.today().addDays(1);
                     dateParsed = true;
+                    dateValid = true;
             }
         }
         // Ausgabe des geparsten Wertes
-        if (dateParsed) {
+        if (dateParsed && dateValid) {
             {$this->getId()}_jquery.data("_internalValue", output.toString("{$this->buildJsDateFormatInternal()}"));
             {$this->getId()}_jquery.data("_isValid", true);
             return output;
